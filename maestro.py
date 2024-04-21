@@ -1,9 +1,15 @@
-def major_scale(root):
+def generate_scale(root, scale_type='major'):
     # Mapping of notes and their positions on a chromatic scale starting from C
     notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
     
-    # Whole step and half step pattern of a major scale
-    steps = [2, 2, 1, 2, 2, 2, 1]
+    # Step patterns for major and minor scales
+    steps = {
+        'major': [2, 2, 1, 2, 2, 2, 1],
+        'minor': [2, 1, 2, 2, 1, 2, 2]
+    }
+    
+    # Selecting the correct pattern based on the scale type
+    pattern = steps[scale_type]
     
     # Finding the starting index of the root note
     start_index = notes.index(root)
@@ -11,7 +17,7 @@ def major_scale(root):
     # Generating the scale
     scale = [root]
     current_index = start_index
-    for step in steps:
+    for step in pattern:
         current_index = (current_index + step) % len(notes)
         scale.append(notes[current_index])
     
@@ -19,5 +25,6 @@ def major_scale(root):
 
 # Example usage
 root_note = input("Enter the root note (e.g., C, D#, A, etc.): ")
-scale = major_scale(root_note)
-print("The major scale starting from", root_note, "is:", scale)
+scale_type = input("Enter the scale type ('major' or 'minor'): ")
+scale = generate_scale(root_note, scale_type)
+print(f"The {scale_type} scale starting from {root_note} is:", scale)
