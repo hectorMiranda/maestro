@@ -1,12 +1,29 @@
 import curses
 import os
+import time
 
-def main(stdscr):
-    # Clear screen and set up window
+
+def splash_screen(stdscr):
     stdscr.clear()
     curses.start_color()
     curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLUE)
     stdscr.bkgd(curses.color_pair(1))
+    stdscr.addstr(1, 1, "WordPerfectLike")
+    stdscr.addstr(2, 1, "0.5.1.002")
+    stdscr.addstr(4, 1, "Marcetux")
+    stdscr.addstr(5, 1, "GNU General Public License v2.0")
+    stdscr.addstr(6, 1, "Marcetux")
+    stdscr.addstr(7, 1, "Lincoln Heights, CA USA")
+    stdscr.addstr(9, 1, "NOTE: The WPLike System is using \WPLIKE51")
+    stdscr.addstr(10, 1, "Please wait *")
+    stdscr.refresh()
+
+    # nothing to load for now
+    time.sleep(3)
+
+def main(stdscr):
+    splash_screen(stdscr)
+    stdscr.clear()
     stdscr.addstr("WordPerfect-like Editor\n")
     stdscr.addstr("F1: Save  F2: Load  F3: Quit\n")
     stdscr.refresh()
