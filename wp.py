@@ -21,6 +21,15 @@ def splash_screen(stdscr):
     # nothing to load for now
     time.sleep(3)
 
+def get_user_input(stdscr, prompt):
+    stdscr.addstr(prompt)
+    stdscr.refresh()
+    curses.echo()
+    input = stdscr.getstr()
+    curses.noecho()
+    return input.decode()
+
+
 def main(stdscr):
     splash_screen(stdscr)
     stdscr.clear()
@@ -31,46 +40,58 @@ def main(stdscr):
     # Initialize the text storage and position
     text = []
     row, col = 2, 0
+    filename = None
+
 
     while True:
+        stdscr.addstr(0, 0, "WordPerfect-like Editor (F1: Save  F2: Load  F3: Quit)            ")
+        stdscr.refresh()
+
+        if row > 1:
+            stdscr.move(row, col)
         char = stdscr.getch()
 
-        if char == curses.KEY_F3:  
+        if char == curses.KEY_F3:  # F3 to quit
             break
         elif char == curses.KEY_F1:  # F1 to save
-            with open('output.txt', 'w') as f:
+            if not filename:
+                filename = get_user_input(stdscr, "\nEnter filename: ")
+                if not filename:
+                    stdscr.addstr("\nNo filename given, not saved!")
+                    row += 2
+                    continue
+            with open(filename, 'w') as f:
                 f.write('\n'.join(text))
-            stdscr.addstr(row, 0, "File saved!      ")
-            row += 1
+            stdscr.addstr("\nFile saved as '{}'".format(filename))
+            row += 2
         elif char == curses.KEY_F2:  # F2 to load
-            if os.path.exists('output.txt'):
-                with open('output.txt', 'r') as f:
+            filename = get_user_input(stdscr, "\nEnter filename to load: ")
+            if os.path.exists(filename):
+                with open(filename, 'r') as f:
                     text = f.read().splitlines()
+                stdscr.clear()
                 for idx, line in enumerate(text):
                     stdscr.addstr(2 + idx, 0, line)
                 row = len(text) + 2
             else:
-                stdscr.addstr(row, 0, "File not found!  ")
-                row += 1
+                stdscr.addstr("\nFile not found!")
+                row += 2
         elif char == 10:  # Enter key
+            text.append("")
             row += 1
             col = 0
-            text.append("")
         elif char == curses.KEY_BACKSPACE or char == 127:
             if col > 0:
                 col -= 1
                 text[row-2] = text[row-2][:-1]
                 stdscr.delch(row, col)
         else:
-            stdscr.addch(row, col, char)
-            if row-2 < len(text):
-                text[row-2] += chr(char)
-            else:
-                text.append(chr(char))
-            col += 1
-
-    # Clean up and close
-    stdscr.refresh()
-    stdscr.getch()
+            if col < curses.COLS - 1:
+                stdscr.addch(row, col, char)
+                if len(text) > row - 2:
+                    text[row-2] += chr(char)
+                else:
+                    text.append(chr(char))
+                col += 1
 
 curses.wrapper(main)
