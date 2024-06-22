@@ -6,19 +6,34 @@ import time
 def splash_screen(stdscr):
     stdscr.clear()
     curses.start_color()
-    curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLUE)
-    stdscr.bkgd(curses.color_pair(1))
-    stdscr.addstr(1, 1, "WordPerfectLike")
-    stdscr.addstr(2, 1, "0.5.1.002")
-    stdscr.addstr(4, 1, "Marcetux")
-    stdscr.addstr(5, 1, "GNU General Public License v2.0")
-    stdscr.addstr(6, 1, "Marcetux")
-    stdscr.addstr(7, 1, "Lincoln Heights, CA USA")
-    stdscr.addstr(9, 1, "NOTE: The WPLike System is using \WPLIKE51")
-    stdscr.addstr(10, 1, "Please wait *")
-    stdscr.refresh()
+    curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLUE)  # Main screen color
+    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_WHITE)  # Box color
 
-    # nothing to load for now
+    # Calculate center position for the text box
+    height, width = stdscr.getmaxyx()
+    box_width = 50
+    box_height = 12
+    box_start_y = (height - box_height) // 2
+    box_start_x = (width - box_width) // 2
+
+    # Draw box and background
+    stdscr.bkgd(curses.color_pair(1))
+    box = stdscr.subwin(box_height, box_width, box_start_y, box_start_x)
+    box.bkgd(curses.color_pair(2))
+    box.box()
+
+    # Add text centered within the box
+    box.addstr(1, (box_width - len("WordPerfectLike")) // 2, "WordPerfectLike")
+    box.addstr(2, (box_width - len("0.5.1.002")) // 2, "0.5.1.002")
+    box.addstr(4, (box_width - len("Marcetux")) // 2, "Marcetux")
+    box.addstr(5, (box_width - len("GNU General Public License v2.0")) // 2, "GNU General Public License v2.0")
+    box.addstr(6, (box_width - len("Marcetux")) // 2, "Marcetux")
+    box.addstr(7, (box_width - len("Lincoln Heights, CA USA")) // 2, "Lincoln Heights, CA USA")
+    box.addstr(9, (box_width - len("NOTE: The WPLike System is using \\WPLIKE51")) // 2, "NOTE: The WPLike System is using \\WPLIKE51")
+    box.addstr(10, (box_width - len("Please wait *")) // 2, "Please wait *")
+    
+    # Refresh box and screen to show changes
+    box.refresh()
     time.sleep(3)
 
 def get_user_input(stdscr, prompt):
