@@ -2,12 +2,73 @@ import curses
 import os
 import time
 
+def draw_menu(stdscr):
+    menu_items = [
+        ("File", 'f'), ("Edit", 'e'), ("Search", 's'), ("Layout", 'l'), 
+        ("Mark", 'm'), ("Tools", 't'), ("Font", 'o'), ("Graphics", 'g'), ("Help", 'h')
+    ]
+    h, w = stdscr.getmaxyx()
+    x_pos = 0
+    for title, hotkey in menu_items:
+        # Find the position of the hotkey in the title to underline it
+        hotkey_idx = title.lower().find(hotkey)
+        stdscr.addstr(0, x_pos, title[:hotkey_idx], curses.A_REVERSE)
+        stdscr.addstr(0, x_pos + hotkey_idx, title[hotkey_idx], curses.A_REVERSE | curses.A_UNDERLINE)
+        stdscr.addstr(0, x_pos + hotkey_idx + 1, title[hotkey_idx + 1:], curses.A_REVERSE)
+        x_pos += len(title) + 2  # Add spacing between menu items
+
+def show_modal(stdscr, message):
+    h, w = stdscr.getmaxyx()
+    modal_width = max(20, len(message) + 4)
+    modal_height = 3
+    modal_win = curses.newwin(modal_height, modal_width, (h - modal_height) // 2, (w - modal_width) // 2)
+    modal_win.box()
+    modal_win.addstr(1, (modal_width - len(message)) // 2, message)
+    modal_win.refresh()
+    modal_win.getch()
+    modal_win.clear()
+    modal_win.refresh()
+    
+def show_menu_options(stdscr, title):
+    menu_options = {
+        'f': ["New", "Open", "Save", "Exit"],
+        'e': ["Undo", "Cut", "Copy", "Paste"],
+        's': ["Find", "Replace"],
+        'l': ["Margins", "Orientation"],
+        'm': ["Bookmarks", "Annotations"],
+        't': ["Customize", "Options"],
+        'o': ["Font Size", "Font Color"],
+        'g': ["Insert Image", "Resize"],
+        'h': ["Help Topics", "About"]
+    }
+    options = menu_options.get(title.lower(), [])
+    h, w = stdscr.getmaxyx()
+    if options:
+        menu_win = curses.newwin(len(options) + 2, 20, 1, 0)  # Position right below the menu
+        menu_win.box()
+        for idx, option in enumerate(options):
+            menu_win.addstr(idx + 1, 1, option)
+        menu_win.refresh()
+        menu_win.getch()
+        menu_win.clear()
+        menu_win.refresh()
+
+def draw_status_bar(stdscr, filename, pos_info):
+    h, w = stdscr.getmaxyx()
+    if filename is None:
+        filename = "unknown"
+    status = f"{filename}    {pos_info}"
+    stdscr.addstr(h - 1, 0, status)
+    stdscr.addstr(h - 1, w - len(status) - 1, status)
+    stdscr.clrtoeol()
 
 def splash_screen(stdscr):
     stdscr.clear()
     curses.start_color()
-    curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLUE)  # Main screen color
-    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_WHITE)  # Box color
+    curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_CYAN)  # Main screen color for splash
+    curses.init_pair(2, curses.COLOR_BLUE, curses.COLOR_WHITE)  # Box color
+    curses.init_pair(3, curses.COLOR_WHITE, curses.COLOR_BLUE)  # Box color
+
 
     # Calculate center position for the text box
     height, width = stdscr.getmaxyx()
@@ -35,6 +96,8 @@ def splash_screen(stdscr):
     # Refresh box and screen to show changes
     box.refresh()
     time.sleep(3)
+    stdscr.bkgd(curses.color_pair(3))
+
 
 def get_user_input(stdscr, prompt):
     stdscr.addstr(prompt)
@@ -46,25 +109,25 @@ def get_user_input(stdscr, prompt):
 
 
 def main(stdscr):
-    splash_screen(stdscr)
+    curses.curs_set(0)  # Hide cursor
     stdscr.clear()
-    stdscr.addstr("WordPerfect-like Editor\n")
-    stdscr.addstr("F1: Save  F2: Load  F3: Quit\n")
+    splash_screen(stdscr)  # Call the splash screen function to display the splash screen
+    draw_menu(stdscr)
+    
+    stdscr.clear()
     stdscr.refresh()
 
-    # Initialize the text storage and position
     text = []
-    row, col = 2, 0
     filename = None
-
+    row, col = 2, 0
 
     while True:
-        stdscr.addstr(0, 0, "WordPerfect-like Editor (F1: Save  F2: Load  F3: Quit)            ")
-        stdscr.refresh()
-
-        if row > 1:
-            stdscr.move(row, col)
+        draw_status_bar(stdscr, filename, "Doc 1 Pg 1 Ln {} Pos {}".format(row, col))
+        stdscr.move(row, col + 2)  # Offset for line display
         char = stdscr.getch()
+        
+        if chr(char).lower() in {'f', 'e', 's', 'l', 'm', 't', 'o', 'g', 'h'}:  # Menu hotkeys
+            show_menu_options(stdscr, chr(char))
 
         if char == curses.KEY_F3:  # F3 to quit
             break
@@ -95,7 +158,7 @@ def main(stdscr):
             text.append("")
             row += 1
             col = 0
-        elif char == curses.KEY_BACKSPACE or char == 127:
+        elif char == curses.KEY_BACKSPACE or char is 127:
             if col > 0:
                 col -= 1
                 text[row-2] = text[row-2][:-1]
@@ -110,3 +173,4 @@ def main(stdscr):
                 col += 1
 
 curses.wrapper(main)
+
