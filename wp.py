@@ -66,9 +66,8 @@ def splash_screen(stdscr):
     stdscr.clear()
     curses.start_color()
     curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_CYAN)  # Main screen color for splash
-    curses.init_pair(2, curses.COLOR_BLUE, curses.COLOR_WHITE)  # Box color
-    curses.init_pair(3, curses.COLOR_WHITE, curses.COLOR_BLUE)  # Box color
-
+    curses.init_pair(2, curses.COLOR_BLUE, curses.COLOR_WHITE)  # Box color for splash
+    curses.init_pair(3, curses.COLOR_WHITE, curses.COLOR_BLUE)  # Default screen color
 
     # Calculate center position for the text box
     height, width = stdscr.getmaxyx()
@@ -84,19 +83,23 @@ def splash_screen(stdscr):
     box.box()
 
     # Add text centered within the box
-    box.addstr(1, (box_width - len("WordPerfectLike")) // 2, "WordPerfectLike")
-    box.addstr(2, (box_width - len("0.5.1.002")) // 2, "0.5.1.002")
-    box.addstr(4, (box_width - len("Marcetux")) // 2, "Marcetux")
-    box.addstr(5, (box_width - len("GNU General Public License v2.0")) // 2, "GNU General Public License v2.0")
-    box.addstr(6, (box_width - len("Marcetux")) // 2, "Marcetux")
-    box.addstr(7, (box_width - len("Lincoln Heights, CA USA")) // 2, "Lincoln Heights, CA USA")
-    box.addstr(9, (box_width - len("NOTE: The WPLike System is using \\WPLIKE51")) // 2, "NOTE: The WPLike System is using \\WPLIKE51")
-    box.addstr(10, (box_width - len("Please wait *")) // 2, "Please wait *")
+    box.addstr(1, (box_width - len("WordPerfectLike")) // 2, "WordPerfectLike", curses.color_pair(2))
+    box.addstr(2, (box_width - len("0.5.1.002")) // 2, "0.5.1.002", curses.color_pair(2))
+    box.addstr(4, (box_width - len("Marcetux")) // 2, "Marcetux", curses.color_pair(2))
+    box.addstr(5, (box_width - len("GNU General Public License v2.0")) // 2, "GNU General Public License v2.0", curses.color_pair(2))
+    box.addstr(6, (box_width - len("Marcetux")) // 2, "Marcetux", curses.color_pair(2))
+    box.addstr(7, (box_width - len("Lincoln Heights, CA USA")) // 2, "Lincoln Heights, CA USA", curses.color_pair(2))
+    box.addstr(9, (box_width - len("NOTE: The WPLike System is using \\WPLIKE51")) // 2, "NOTE: The WPLike System is using \\WPLIKE51", curses.color_pair(2))
+    box.addstr(10, (box_width - len("Please wait *")) // 2, "Please wait *", curses.color_pair(2))
     
     # Refresh box and screen to show changes
     box.refresh()
     time.sleep(3)
+
+    # Reset the background color to default and clear the screen after the splash
     stdscr.bkgd(curses.color_pair(3))
+    stdscr.clear()
+    stdscr.refresh()
 
 
 def get_user_input(stdscr, prompt):
@@ -108,13 +111,15 @@ def get_user_input(stdscr, prompt):
     return input.decode()
 
 
+
 def main(stdscr):
     curses.curs_set(0)  # Hide cursor
     stdscr.clear()
     splash_screen(stdscr)  # Call the splash screen function to display the splash screen
-    draw_menu(stdscr)
     
     stdscr.clear()
+    draw_menu(stdscr)
+
     stdscr.refresh()
 
     text = []
