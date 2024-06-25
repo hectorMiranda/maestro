@@ -2,6 +2,10 @@ import curses
 import os
 import time
 
+def setup_directory():
+    if not os.path.exists('WP51_ROOT'):
+        os.makedirs('WP51_ROOT')
+
 def draw_menu(stdscr):
     menu_items = [
         ("File", 'f'), ("Edit", 'e'), ("Search", 's'), ("Layout", 'l'), 
@@ -62,6 +66,12 @@ def draw_status_bar(stdscr, filename, pos_info):
     stdscr.addstr(h - 1, w - len(status) - 1, status)
     stdscr.clrtoeol()
 
+def add_centered_str(box, line_number, text, box_width, color_pair):
+    # Calculate the centered position and add the string
+    center_pos = (box_width - len(text)) // 2
+    box.addstr(line_number, center_pos, text, color_pair)
+
+
 def splash_screen(stdscr):
     stdscr.clear()
     curses.start_color()
@@ -82,16 +92,20 @@ def splash_screen(stdscr):
     box.bkgd(curses.color_pair(2))
     box.box()
 
-    # Add text centered within the box
-    box.addstr(1, (box_width - len("WordPerfectLike")) // 2, "WordPerfectLike", curses.color_pair(2))
-    box.addstr(2, (box_width - len("0.5.1.002")) // 2, "0.5.1.002", curses.color_pair(2))
-    box.addstr(4, (box_width - len("Marcetux")) // 2, "Marcetux", curses.color_pair(2))
-    box.addstr(5, (box_width - len("GNU General Public License v2.0")) // 2, "GNU General Public License v2.0", curses.color_pair(2))
-    box.addstr(6, (box_width - len("Marcetux")) // 2, "Marcetux", curses.color_pair(2))
-    box.addstr(7, (box_width - len("Lincoln Heights, CA USA")) // 2, "Lincoln Heights, CA USA", curses.color_pair(2))
-    box.addstr(9, (box_width - len("NOTE: The WPLike System is using \\WPLIKE51")) // 2, "NOTE: The WPLike System is using \\WPLIKE51", curses.color_pair(2))
-    box.addstr(10, (box_width - len("Please wait *")) // 2, "Please wait *", curses.color_pair(2))
-    
+    texts = [
+        ("WordPerfectLike", 1),
+        ("0.5.1.002", 2),
+        ("Marcetux", 4),
+        ("GNU General Public License v2.0", 5),
+        ("Marcetux", 6),
+        ("Lincoln Heights, CA USA", 7),
+        ("NOTE: The WPLike System is using \\WP51_ROOT", 9),
+        ("Please wait *", 10)
+    ]
+    color_pair = curses.color_pair(2)  
+    for text, line_number in texts:
+        add_centered_str(box, line_number, text, box_width, color_pair)
+
     # Refresh box and screen to show changes
     box.refresh()
     time.sleep(3)
