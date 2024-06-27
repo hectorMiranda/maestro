@@ -114,7 +114,29 @@ def splash_screen(stdscr):
     stdscr.bkgd(curses.color_pair(3))
     stdscr.clear()
     stdscr.refresh()
+    
+def handle_file_saving(stdscr, filename, text):
+    if not filename:
+        filename = "untitled.txt"
+    full_path = os.path.join('WP51_ROOT', filename)
+    with open(full_path, 'w') as file:
+        file.write("\n".join(text))
+    return filename
 
+def handle_file_loading(stdscr, filename, text):
+    full_path = os.path.join('WP51_ROOT', filename)
+    if os.path.exists(full_path):
+        with open(full_path, 'r') as file:
+            lines = file.readlines()
+        text.extend(line.strip() for line in lines)
+    return text
+
+def handle_backspace(text, stdscr, row, col):
+    if col > 0:
+        col -= 1
+        text[row-2] = text[row-2][:-1]
+        stdscr.delch(row, col)
+    return col
 
 def get_user_input(stdscr, prompt):
     stdscr.addstr(prompt)
@@ -124,16 +146,15 @@ def get_user_input(stdscr, prompt):
     curses.noecho()
     return input.decode()
 
-
-
 def main(stdscr):
-    curses.curs_set(0)  # Hide cursor
-    stdscr.clear()
-    splash_screen(stdscr)  # Call the splash screen function to display the splash screen
-    
-    stdscr.clear()
-    draw_menu(stdscr)
+    setup_directory()
+    curses.curs_set(0)
+    curses.noecho()
+    curses.cbreak()
+    stdscr.keypad(True)
 
+    splash_screen(stdscr)
+    draw_menu(stdscr)
     stdscr.refresh()
 
     text = []
@@ -141,47 +162,33 @@ def main(stdscr):
     row, col = 2, 0
 
     while True:
-        draw_status_bar(stdscr, filename, "Doc 1 Pg 1 Ln {} Pos {}".format(row, col))
-        stdscr.move(row, col + 2)  # Offset for line display
+        draw_status_bar(stdscr, filename if filename else "unknown", f"Doc 1 Pg 1 Ln {row} Pos {col}")
+        stdscr.move(row, col + 2)
         char = stdscr.getch()
-        
-        if chr(char).lower() in {'f', 'e', 's', 'l', 'm', 't', 'o', 'g', 'h'}:  # Menu hotkeys
-            show_menu_options(stdscr, chr(char))
 
-        if char == curses.KEY_F3:  # F3 to quit
+        if char == 27:  # Esc key or possibly the start of a meta sequence
+            next_char = stdscr.getch()
+            if next_char == -1:  # No additional character, so it was just an Esc
+                if stdscr.is_wintouched():
+                    stdscr.clear()
+                    draw_menu(stdscr)
+                    stdscr.refresh()
+            else:
+                menu_key = chr(next_char).lower()
+                if menu_key in {'f', 'e', 's', 'l', 'm', 't', 'o', 'g', 'h'}:
+                    show_menu_options(stdscr, menu_key)
+        elif char == curses.KEY_F3:  # F3 to quit
             break
         elif char == curses.KEY_F1:  # F1 to save
-            if not filename:
-                filename = get_user_input(stdscr, "\nEnter filename: ")
-                if not filename:
-                    stdscr.addstr("\nNo filename given, not saved!")
-                    row += 2
-                    continue
-            with open(filename, 'w') as f:
-                f.write('\n'.join(text))
-            stdscr.addstr("\nFile saved as '{}'".format(filename))
-            row += 2
+            filename = handle_file_saving(stdscr, filename, text)
         elif char == curses.KEY_F2:  # F2 to load
-            filename = get_user_input(stdscr, "\nEnter filename to load: ")
-            if os.path.exists(filename):
-                with open(filename, 'r') as f:
-                    text = f.read().splitlines()
-                stdscr.clear()
-                for idx, line in enumerate(text):
-                    stdscr.addstr(2 + idx, 0, line)
-                row = len(text) + 2
-            else:
-                stdscr.addstr("\nFile not found!")
-                row += 2
+            text = handle_file_loading(stdscr, filename, text)
         elif char == 10:  # Enter key
             text.append("")
             row += 1
             col = 0
-        elif char == curses.KEY_BACKSPACE or char is 127:
-            if col > 0:
-                col -= 1
-                text[row-2] = text[row-2][:-1]
-                stdscr.delch(row, col)
+        elif char == curses.KEY_BACKSPACE or char == 127:
+            col = handle_backspace(text, stdscr, row, col)
         else:
             if col < curses.COLS - 1:
                 stdscr.addch(row, col, char)
@@ -192,4 +199,3 @@ def main(stdscr):
                 col += 1
 
 curses.wrapper(main)
-
