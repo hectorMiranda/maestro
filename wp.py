@@ -108,12 +108,24 @@ def splash_screen(stdscr):
 
     # Refresh box and screen to show changes
     box.refresh()
-    time.sleep(3)
+    load_plugins()
 
     # Reset the background color to default and clear the screen after the splash
     stdscr.bkgd(curses.color_pair(3))
     stdscr.clear()
     stdscr.refresh()
+
+def load_plugins():
+    # Load plugins from the 'plugins' directory
+    plugins = []
+    if os.path.exists('plugins'):
+        for file in os.listdir('plugins'):
+            if file.endswith('.py'):
+                plugin_name = file[:-3]
+                plugin_module = __import__(f'plugins.{plugin_name}', fromlist=[plugin_name])
+                plugins.append(plugin_module)
+    return plugins
+
     
 def handle_file_saving(stdscr, filename, text):
     if not filename:
