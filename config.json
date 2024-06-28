@@ -1,0 +1,33 @@
+{
+    "directories": {
+        "root": "WP51_ROOT",
+        "plugins": "plugins"
+    },
+    "initial_filename": "untitled.txt",
+    "menu_items": {
+        "f": ["File", ["New", "Open", "Save", "Exit"]],
+        "e": ["Edit", ["Undo", "Cut", "Copy", "Paste"]],
+        "s": ["Search", ["Find", "Replace"]],
+        "l": ["Layout", ["Margins", "Orientation"]],
+        "m": ["Mark", ["Bookmarks", "Annotations"]],
+        "t": ["Tools", ["Customize", "Options"]],
+        "o": ["Font", ["Font Size", "Font Color"]],
+        "g": ["Graphics", ["Insert Image", "Resize"]],
+        "h": ["Help", ["Help Topics", "About"]]
+    },
+    "splash_screen": [
+        {"text": "WordPerfectLike", "line": 1},
+        {"text": "0.5.1.002", "line": 2},
+        {"text": "Marcetux", "line": 4},
+        {"text": "GNU General Public License v2.0", "line": 5},
+        {"text": "Marcetux", "line": 6},
+        {"text": "Lincoln Heights, CA USA", "line": 7},
+        {"text": "NOTE: The WPLike System is using \\WP51_ROOT", "line": 9},
+        {"text": "Please wait *", "line": 10}
+    ],
+    "colors": {
+        "main_background": [1, "COLOR_WHITE", "COLOR_CYAN"],
+        "splash_box": [2, "COLOR_BLUE", "COLOR_WHITE"],
+        "default_background": [3, "COLOR_WHITE", "COLOR_BLUE"]
+    }
+}
