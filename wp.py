@@ -2,24 +2,36 @@ import curses
 import os
 import time
 
+
+
+
+def load_config():
+    with open('config.json', 'r') as file:
+        return json.load(file)
+
+config = load_config()
+
+
 def setup_directory():
-    if not os.path.exists('WP51_ROOT'):
-        os.makedirs('WP51_ROOT')
+    root_dir = config["directories"]["root"]
+    if not os.path.exists(root_dir):
+        os.makedirs(root_dir)
+
+def setup_colors():
+    for key, (idx, fg, bg) in config["colors"].items():
+        curses.init_pair(idx, getattr(curses, fg), getattr(curses, bg))
 
 def draw_menu(stdscr):
-    menu_items = [
-        ("File", 'f'), ("Edit", 'e'), ("Search", 's'), ("Layout", 'l'), 
-        ("Mark", 'm'), ("Tools", 't'), ("Font", 'o'), ("Graphics", 'g'), ("Help", 'h')
-    ]
+    menu_items = config["menu_items"]
     h, w = stdscr.getmaxyx()
     x_pos = 0
-    for title, hotkey in menu_items:
-        # Find the position of the hotkey in the title to underline it
+    for key, (title, _) in menu_items.items():
+        hotkey = key
         hotkey_idx = title.lower().find(hotkey)
         stdscr.addstr(0, x_pos, title[:hotkey_idx], curses.A_REVERSE)
         stdscr.addstr(0, x_pos + hotkey_idx, title[hotkey_idx], curses.A_REVERSE | curses.A_UNDERLINE)
         stdscr.addstr(0, x_pos + hotkey_idx + 1, title[hotkey_idx + 1:], curses.A_REVERSE)
-        x_pos += len(title) + 2  # Add spacing between menu items
+        x_pos += len(title) + 2
 
 def show_modal(stdscr, message):
     h, w = stdscr.getmaxyx()
@@ -34,28 +46,16 @@ def show_modal(stdscr, message):
     modal_win.refresh()
     
 def show_menu_options(stdscr, title):
-    menu_options = {
-        'f': ["New", "Open", "Save", "Exit"],
-        'e': ["Undo", "Cut", "Copy", "Paste"],
-        's': ["Find", "Replace"],
-        'l': ["Margins", "Orientation"],
-        'm': ["Bookmarks", "Annotations"],
-        't': ["Customize", "Options"],
-        'o': ["Font Size", "Font Color"],
-        'g': ["Insert Image", "Resize"],
-        'h': ["Help Topics", "About"]
-    }
-    options = menu_options.get(title.lower(), [])
+    options = config["menu_items"][title.lower()][1]
     h, w = stdscr.getmaxyx()
-    if options:
-        menu_win = curses.newwin(len(options) + 2, 20, 1, 0)  # Position right below the menu
-        menu_win.box()
-        for idx, option in enumerate(options):
-            menu_win.addstr(idx + 1, 1, option)
-        menu_win.refresh()
-        menu_win.getch()
-        menu_win.clear()
-        menu_win.refresh()
+    menu_win = curses.newwin(len(options) + 2, 20, 1, 0)
+    menu_win.box()
+    for idx, option in enumerate(options):
+        menu_win.addstr(idx + 1, 1, option)
+    menu_win.refresh()
+    menu_win.getch()
+    menu_win.clear()
+    menu_win.refresh()
 
 def draw_status_bar(stdscr, filename, pos_info):
     h, w = stdscr.getmaxyx()
@@ -73,58 +73,32 @@ def add_centered_str(box, line_number, text, box_width, color_pair):
 
 
 def splash_screen(stdscr):
+    setup_colors()
     stdscr.clear()
-    curses.start_color()
-    curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_CYAN)  # Main screen color for splash
-    curses.init_pair(2, curses.COLOR_BLUE, curses.COLOR_WHITE)  # Box color for splash
-    curses.init_pair(3, curses.COLOR_WHITE, curses.COLOR_BLUE)  # Default screen color
-
-    # Calculate center position for the text box
     height, width = stdscr.getmaxyx()
     box_width = 50
     box_height = 12
     box_start_y = (height - box_height) // 2
     box_start_x = (width - box_width) // 2
-
-    # Draw box and background
-    stdscr.bkgd(curses.color_pair(1))
     box = stdscr.subwin(box_height, box_width, box_start_y, box_start_x)
-    box.bkgd(curses.color_pair(2))
+    box.bkgd(curses.color_pair(config["colors"]["splash_box"][0]))
     box.box()
 
-    texts = [
-        ("WordPerfectLike", 1),
-        ("0.5.1.002", 2),
-        ("Marcetux", 4),
-        ("GNU General Public License v2.0", 5),
-        ("Marcetux", 6),
-        ("Lincoln Heights, CA USA", 7),
-        ("NOTE: The WPLike System is using \\WP51_ROOT", 9),
-        ("Please wait *", 10)
-    ]
-    color_pair = curses.color_pair(2)  
-    for text, line_number in texts:
-        add_centered_str(box, line_number, text, box_width, color_pair)
+    for item in config["splash_screen"]:
+        add_centered_str(box, item["line"], item["text"], box_width, curses.color_pair(config["colors"]["splash_box"][0]))
 
-    # Refresh box and screen to show changes
     box.refresh()
     load_plugins()
 
-    # Reset the background color to default and clear the screen after the splash
-    stdscr.bkgd(curses.color_pair(3))
-    stdscr.clear()
-    stdscr.refresh()
-
 def load_plugins():
-    # Load plugins from the 'plugins' directory
-    plugins = []
-    if os.path.exists('plugins'):
-        for file in os.listdir('plugins'):
+    plugin_dir = config["directories"]["plugins"]
+    if os.path.exists(plugin_dir):
+        for file in os.listdir(plugin_dir):
             if file.endswith('.py'):
                 plugin_name = file[:-3]
-                plugin_module = __import__(f'plugins.{plugin_name}', fromlist=[plugin_name])
-                plugins.append(plugin_module)
-    return plugins
+                plugin_module = __import__(f'{plugin_dir}.{plugin_name}', fromlist=[plugin_name])
+                # Assume plugins are handled internally
+
 
     
 def handle_file_saving(stdscr, filename, text):
