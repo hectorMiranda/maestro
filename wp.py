@@ -1,6 +1,7 @@
 import curses
 import os
 import time
+import json
 
 
 
@@ -134,54 +135,61 @@ def get_user_input(stdscr, prompt):
 
 def main(stdscr):
     setup_directory()
-    curses.curs_set(0)
-    curses.noecho()
-    curses.cbreak()
-    stdscr.keypad(True)
+    curses.curs_set(0)  # Cursor invisible
+    curses.noecho()     # Turn off auto echoing of keypress on to screen
+    curses.cbreak()     # React to keys instantly, without requiring the Enter key to be pressed
+    stdscr.keypad(True) # Enable keypad mode
 
     splash_screen(stdscr)
     draw_menu(stdscr)
     stdscr.refresh()
 
-    text = []
+    text = [[]]  # Initialize with a list containing one empty list to handle text like lines
     filename = None
     row, col = 2, 0
 
     while True:
         draw_status_bar(stdscr, filename if filename else "unknown", f"Doc 1 Pg 1 Ln {row} Pos {col}")
-        stdscr.move(row, col + 2)
+        stdscr.move(row, col)
         char = stdscr.getch()
 
-        if char == 27:  # Esc key or possibly the start of a meta sequence
-            next_char = stdscr.getch()
-            if next_char == -1:  # No additional character, so it was just an Esc
-                if stdscr.is_wintouched():
-                    stdscr.clear()
-                    draw_menu(stdscr)
-                    stdscr.refresh()
-            else:
-                menu_key = chr(next_char).lower()
-                if menu_key in {'f', 'e', 's', 'l', 'm', 't', 'o', 'g', 'h'}:
-                    show_menu_options(stdscr, menu_key)
+        if char == 27:  # Handle escape key (ASCII code for ESC)
+            break
+        elif char == curses.KEY_UP and row > 2:  # Move cursor up
+            row -= 1
+            col = min(col, len(text[row-2]))
+        elif char == curses.KEY_DOWN and row < len(text):  # Move cursor down
+            row += 1
+            col = min(col, len(text[row-2]))
+        elif char == curses.KEY_LEFT and col > 0:  # Move cursor left
+            col -= 1
+        elif char == curses.KEY_RIGHT and col < len(text[row-2]):  # Move cursor right
+            col += 1
         elif char == curses.KEY_F3:  # F3 to quit
             break
         elif char == curses.KEY_F1:  # F1 to save
             filename = handle_file_saving(stdscr, filename, text)
         elif char == curses.KEY_F2:  # F2 to load
             text = handle_file_loading(stdscr, filename, text)
-        elif char == 10:  # Enter key
-            text.append("")
+        elif char == 10:  # Handle Enter key
+            text.insert(row, [])  # Start a new line
             row += 1
             col = 0
-        elif char == curses.KEY_BACKSPACE or char == 127:
-            col = handle_backspace(text, stdscr, row, col)
-        else:
-            if col < curses.COLS - 1:
-                stdscr.addch(row, col, char)
-                if len(text) > row - 2:
-                    text[row-2] += chr(char)
-                else:
-                    text.append(chr(char))
-                col += 1
+        elif char == curses.KEY_BACKSPACE or char == 127:  # Handle Backspace
+            if col > 0:
+                text[row-2].pop(col-1)  # Remove character at cursor
+                col -= 1
+            elif row > 2:  # Handle backspace at the beginning of a line
+                col = len(text[row-3])
+                text[row-3].extend(text.pop(row-2))  # Merge lines
+                row -= 1
+        else:  # Handle regular character input
+            text[row-2].insert(col, chr(char))
+            col += 1
+
+        # Redraw text on the screen
+        stdscr.clear()
+        for r, line in enumerate(text, 2):
+            stdscr.addstr(r, 0, "".join(line))
 
 curses.wrapper(main)
