@@ -184,12 +184,17 @@ def main(stdscr):
                 text[row-3].extend(text.pop(row-2))  # Merge lines
                 row -= 1
         else:  # Handle regular character input
-            text[row-2].insert(col, chr(char))
+            if len(text) > row - 2:
+                text[row-2].insert(col, chr(char))
+            else:
+                text.append([chr(char)])
             col += 1
 
         # Redraw text on the screen
         stdscr.clear()
+        draw_menu(stdscr)  # Redraw the menu
         for r, line in enumerate(text, 2):
             stdscr.addstr(r, 0, "".join(line))
+        stdscr.refresh()  # Refresh the screen after redrawing
 
 curses.wrapper(main)
