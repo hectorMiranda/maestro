@@ -135,7 +135,7 @@ def get_user_input(stdscr, prompt):
 
 def main(stdscr):
     setup_directory()
-    curses.curs_set(0)  # Cursor invisible
+    curses.curs_set(2)  # Cursor visible
     curses.noecho()     # Turn off auto echoing of keypress on to screen
     curses.cbreak()     # React to keys instantly, without requiring the Enter key to be pressed
     stdscr.keypad(True) # Enable keypad mode
