@@ -4,7 +4,10 @@ import time
 import json
 
 
-
+if 'ncursesw' in curses.__file__:
+    print("Wide character support enabled.")
+else:
+    print("Wide character support not enabled. Functionality may be limited.")
 
 def load_config():
     with open('config.json', 'r') as file:
@@ -85,11 +88,16 @@ def splash_screen(stdscr):
     box.bkgd(curses.color_pair(config["colors"]["splash_box"][0]))
     box.box()
 
-    for item in config["splash_screen"]:
-        add_centered_str(box, item["line"], item["text"], box_width, curses.color_pair(config["colors"]["splash_box"][0]))
+    # Example text updated to include a musical note
+    splash_texts = config["splash_screen"]  # Assuming your splash text is configured in JSON
+    splash_texts.append({"text": "Loading... ♪", "line": 11})  # Adding a musical note
+
+    for item in splash_texts:
+        text = item["text"]
+        line_number = item["line"]
+        add_centered_str(box, line_number, text, box_width, curses.color_pair(config["colors"]["splash_box"][0]))
 
     box.refresh()
-    load_plugins()
 
 def load_plugins():
     plugin_dir = config["directories"]["plugins"]
@@ -135,10 +143,10 @@ def get_user_input(stdscr, prompt):
 
 def main(stdscr):
     setup_directory()
-    curses.curs_set(2)  # Cursor visible
+    curses.curs_set(2)  # Cursor visible and blinking
     curses.noecho()     # Turn off auto echoing of keypress on to screen
     curses.cbreak()     # React to keys instantly, without requiring the Enter key to be pressed
-    stdscr.keypad(True) # Enable keypad mode
+    stdscr.keypad(True) # Enable keypad mode to handle special keys like arrow keys
 
     splash_screen(stdscr)
     draw_menu(stdscr)
@@ -146,7 +154,7 @@ def main(stdscr):
 
     text = [[]]  # Initialize with a list containing one empty list to handle text like lines
     filename = None
-    row, col = 2, 0
+    row, col = 2, 0  # Start below the menu
 
     while True:
         draw_status_bar(stdscr, filename if filename else "unknown", f"Doc 1 Pg 1 Ln {row} Pos {col}")
@@ -172,29 +180,30 @@ def main(stdscr):
         elif char == curses.KEY_F2:  # F2 to load
             text = handle_file_loading(stdscr, filename, text)
         elif char == 10:  # Handle Enter key
-            text.insert(row, [])  # Start a new line
+            text.insert(row, [])
             row += 1
             col = 0
         elif char == curses.KEY_BACKSPACE or char == 127:  # Handle Backspace
             if col > 0:
-                text[row-2].pop(col-1)  # Remove character at cursor
+                text[row-2].pop(col-1)
                 col -= 1
-            elif row > 2:  # Handle backspace at the beginning of a line
+            elif row > 2:
                 col = len(text[row-3])
-                text[row-3].extend(text.pop(row-2))  # Merge lines
+                text[row-3].extend(text.pop(row-2))
                 row -= 1
         else:  # Handle regular character input
-            if len(text) > row - 2:
+            if row-2 < len(text):
                 text[row-2].insert(col, chr(char))
+                col += 1
             else:
                 text.append([chr(char)])
-            col += 1
+                col = 1
 
         # Redraw text on the screen
         stdscr.clear()
-        draw_menu(stdscr)  # Redraw the menu
+        draw_menu(stdscr)
         for r, line in enumerate(text, 2):
             stdscr.addstr(r, 0, "".join(line))
-        stdscr.refresh()  # Refresh the screen after redrawing
+        stdscr.refresh()
 
 curses.wrapper(main)
