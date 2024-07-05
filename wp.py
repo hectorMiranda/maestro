@@ -2,6 +2,7 @@ import curses
 import os
 import time
 import json
+import sys
 
 
 if 'ncursesw' in curses.__file__:
@@ -15,6 +16,13 @@ def load_config():
 
 config = load_config()
 
+def open_file_from_command_line(stdscr):
+    if len(sys.argv) > 1:  
+        file_path = sys.argv[1]
+        if os.path.isfile(file_path):  
+            handle_file_loading(stdscr, file_path, [])
+        else:
+            show_modal(stdscr, "File not found. Press any key to continue...")
 
 def setup_directory():
     root_dir = config["directories"]["root"]
@@ -155,6 +163,10 @@ def main(stdscr):
     text = [[]]  # Initialize with a list containing one empty list to handle text like lines
     filename = None
     row, col = 2, 0  # Start below the menu
+    
+    open_file_from_command_line(stdscr)
+
+    
 
     while True:
         draw_status_bar(stdscr, filename if filename else "unknown", f"Doc 1 Pg 1 Ln {row} Pos {col}")
