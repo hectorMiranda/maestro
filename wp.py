@@ -16,13 +16,6 @@ def load_config():
 
 config = load_config()
 
-def open_file_from_command_line(stdscr):
-    if len(sys.argv) > 1:  
-        file_path = sys.argv[1]
-        if os.path.isfile(file_path):  
-            handle_file_loading(stdscr, file_path, [])
-        else:
-            show_modal(stdscr, "File not found. Press any key to continue...")
 
 def setup_directory():
     root_dir = config["directories"]["root"]
@@ -127,12 +120,26 @@ def handle_file_saving(stdscr, filename, text):
     return filename
 
 def handle_file_loading(stdscr, filename, text):
-    full_path = os.path.join('WP51_ROOT', filename)
+    if not filename:
+        show_modal(stdscr, "No filename provided. Press any key to continue...")
+        return text  # Return existing text or empty to avoid further errors
+    full_path = os.path.join('WP51_ROOT', filename)  # Ensure filename is not None here
     if os.path.exists(full_path):
         with open(full_path, 'r') as file:
             lines = file.readlines()
         text.extend(line.strip() for line in lines)
+    else:
+        show_modal(stdscr, "File does not exist. Press any key to continue...")
     return text
+
+def open_file_from_command_line(stdscr):
+    if len(sys.argv) > 1:
+        file_path = sys.argv[1]
+        if os.path.isfile(file_path):
+            filename = os.path.basename(file_path)
+            handle_file_loading(stdscr, filename, [])
+        else:
+            show_modal(stdscr, "File not found. Press any key to continue...")
 
 def handle_backspace(text, stdscr, row, col):
     if col > 0:
@@ -165,9 +172,7 @@ def main(stdscr):
     row, col = 2, 0  # Start below the menu
     
     open_file_from_command_line(stdscr)
-
     
-
     while True:
         draw_status_bar(stdscr, filename if filename else "unknown", f"Doc 1 Pg 1 Ln {row} Pos {col}")
         stdscr.move(row, col)
