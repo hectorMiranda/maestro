@@ -20,8 +20,8 @@ def show_modal(stdscr, message):
 def load_config():
     with open('config.json', 'r') as file:
         return json.load(file)
-
-
+    
+config = load_config()
 
 def setup_directory():
     root_dir = config["directories"]["root"]
@@ -63,9 +63,9 @@ def draw_status_bar(stdscr, filename, pos_info):
     if filename is None:
         filename = "unknown"
     status = f"{filename}    {pos_info}"
-    stdscr.addstr(h - 1, 0, status)
-    stdscr.addstr(h - 1, w - len(status) - 1, status)
-    stdscr.clrtoeol()
+    stdscr.addstr(h - 1, 0, status[:w-1])  # Fill the status bar and truncate if longer than width
+    stdscr.clrtoeol()  # Clear to end of line to avoid duplication or leftover characters
+
 
 def add_centered_str(box, line_number, text, box_width, color_pair):
     # Calculate the centered position and add the string
