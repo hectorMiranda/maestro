@@ -5,16 +5,22 @@ import json
 import sys
 
 
-if 'ncursesw' in curses.__file__:
-    print("Wide character support enabled.")
-else:
-    print("Wide character support not enabled. Functionality may be limited.")
+def show_modal(stdscr, message):
+    h, w = stdscr.getmaxyx()
+    modal_width = max(20, len(message) + 4)
+    modal_height = 3
+    modal_win = curses.newwin(modal_height, modal_width, (h - modal_height) // 2, (w - modal_width) // 2)
+    modal_win.box()
+    modal_win.addstr(1, (modal_width - len(message)) // 2, message)
+    modal_win.refresh()
+    modal_win.getch()
+    modal_win.clear()
+    modal_win.refresh()
 
 def load_config():
     with open('config.json', 'r') as file:
         return json.load(file)
 
-config = load_config()
 
 
 def setup_directory():
@@ -38,17 +44,7 @@ def draw_menu(stdscr):
         stdscr.addstr(0, x_pos + hotkey_idx + 1, title[hotkey_idx + 1:], curses.A_REVERSE)
         x_pos += len(title) + 2
 
-def show_modal(stdscr, message):
-    h, w = stdscr.getmaxyx()
-    modal_width = max(20, len(message) + 4)
-    modal_height = 3
-    modal_win = curses.newwin(modal_height, modal_width, (h - modal_height) // 2, (w - modal_width) // 2)
-    modal_win.box()
-    modal_win.addstr(1, (modal_width - len(message)) // 2, message)
-    modal_win.refresh()
-    modal_win.getch()
-    modal_win.clear()
-    modal_win.refresh()
+
     
 def show_menu_options(stdscr, title):
     options = config["menu_items"][title.lower()][1]
@@ -123,7 +119,7 @@ def handle_file_loading(stdscr, filename, text):
     if not filename:
         show_modal(stdscr, "No filename provided. Press any key to continue...")
         return text  # Return existing text or empty to avoid further errors
-    full_path = os.path.join('WP51_ROOT', filename)  # Ensure filename is not None here
+    full_path = os.path.join('WP51_ROOT', filename)  
     if os.path.exists(full_path):
         with open(full_path, 'r') as file:
             lines = file.readlines()
@@ -137,9 +133,8 @@ def open_file_from_command_line(stdscr):
         file_path = sys.argv[1]
         if os.path.isfile(file_path):
             filename = os.path.basename(file_path)
-            handle_file_loading(stdscr, filename, [])
-        else:
-            show_modal(stdscr, "File not found. Press any key to continue...")
+            return handle_file_loading(stdscr, filename, []), filename
+    return [], None
 
 def handle_backspace(text, stdscr, row, col):
     if col > 0:
@@ -157,18 +152,31 @@ def get_user_input(stdscr, prompt):
     return input.decode()
 
 def main(stdscr):
+
     setup_directory()
     curses.curs_set(2)  # Cursor visible and blinking
     curses.noecho()     # Turn off auto echoing of keypress on to screen
     curses.cbreak()     # React to keys instantly, without requiring the Enter key to be pressed
     stdscr.keypad(True) # Enable keypad mode to handle special keys like arrow keys
 
+    if 'ncursesw' in curses.__file__:
+        show_modal(stdscr, "Wide character support enabled.")
+    else:
+        show_modal(stdscr, "Wide character support not enabled. Functionality may be limited.")
+
+
+
     splash_screen(stdscr)
     draw_menu(stdscr)
     stdscr.refresh()
 
-    text = [[]]  # Initialize with a list containing one empty list to handle text like lines
     filename = None
+
+    text, filename = open_file_from_command_line(stdscr)
+    
+    if not text:  # Initialize text if nothing was loaded
+        text = [[]]
+    
     row, col = 2, 0  # Start below the menu
     
     open_file_from_command_line(stdscr)
