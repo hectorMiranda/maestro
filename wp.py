@@ -58,11 +58,17 @@ def show_menu_options(stdscr, title):
     menu_win.clear()
     menu_win.refresh()
 
-def draw_status_bar(stdscr, filename, pos_info):
+def draw_status_bar(stdscr, filename, pos_info, current_task):
+    
+    
     h, w = stdscr.getmaxyx()
+    
+    if current_task is None:
+        current_task = "Ready"
+    
     if filename is None:
         filename = "unknown"
-    status = f"{filename}    {pos_info}"
+    status = f"{current_task} | {filename}    {pos_info}"
     stdscr.addstr(h - 1, 0, status[:w-1])  # Fill the status bar and truncate if longer than width
     stdscr.clrtoeol()  # Clear to end of line to avoid duplication or leftover characters
 
@@ -182,15 +188,19 @@ def main(stdscr):
     open_file_from_command_line(stdscr)
     
     while True:
-        draw_status_bar(stdscr, filename if filename else "unknown", f"Doc 1 Pg 1 Ln {row} Pos {col}")
+        draw_status_bar(stdscr, filename if filename else "unknown", f"Doc 1 Pg 1 Ln {row} Pos {col}", None)
         stdscr.move(row, col)
         char = stdscr.getch()
 
-        if char == 27:  # Handle escape key (ASCII code for ESC)
+        if char == 27:  # ASCII code for ESC
+            draw_status_bar(stdscr, filename if filename else "unknown", f"Doc 1 Pg 1 Ln {row} Pos {col}", "ESC")
+
             break
-        elif char == curses.KEY_UP and row > 2:  # Move cursor up
+        elif char == curses.KEY_UP and row > 2:  
             row -= 1
             col = min(col, len(text[row-2]))
+            draw_status_bar(stdscr, filename if filename else "unknown", f"Doc 1 Pg 1 Ln {row} Pos {col}", "UP")
+
         elif char == curses.KEY_DOWN and row < len(text):  # Move cursor down
             row += 1
             col = min(col, len(text[row-2]))
