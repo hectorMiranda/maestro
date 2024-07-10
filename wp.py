@@ -118,7 +118,8 @@ def handle_file_saving(stdscr, filename, text):
         filename = "untitled.txt"
     full_path = os.path.join('WP51_ROOT', filename)
     with open(full_path, 'w') as file:
-        file.write("\n".join(text))
+        for line in text:
+            file.write("".join(line) + "\n")  # Join each line and append a newline character
     return filename
 
 def handle_file_loading(stdscr, filename, text):
@@ -180,8 +181,8 @@ def main(stdscr):
 
     text, filename = open_file_from_command_line(stdscr)
     
-    if not text:  # Initialize text if nothing was loaded
-        text = [[]]
+    if not text:  
+        text = [[]] #list of lists
     
     row, col = 2, 0  # Start below the menu
     
@@ -190,10 +191,11 @@ def main(stdscr):
     while True:
         draw_status_bar(stdscr, filename if filename else "unknown", f"Doc 1 Pg 1 Ln {row} Pos {col}", None)
         stdscr.move(row, col)
+        
         char = stdscr.getch()
 
         if char == 27:  # ASCII code for ESC
-            draw_status_bar(stdscr, filename if filename else "unknown", f"Doc 1 Pg 1 Ln {row} Pos {col}", "ESC")
+            draw_status_bar(stdscr, filename if filename else "BYE!", f"Doc 1 Pg 1 Ln {row} Pos {col}", "ESC")
 
             break
         elif char == curses.KEY_UP and row > 2:  
@@ -218,23 +220,26 @@ def main(stdscr):
             text.insert(row, [])
             row += 1
             col = 0
-        elif char == curses.KEY_BACKSPACE or char == 127:  # Handle Backspace
+        if char == curses.KEY_BACKSPACE or char == 127:
             if col > 0:
-                text[row-2].pop(col-1)
+                # Remove a character from the list
+                del text[row-2][col-1]
                 col -= 1
             elif row > 2:
+                # Merge current line with the previous one
                 col = len(text[row-3])
                 text[row-3].extend(text.pop(row-2))
                 row -= 1
-        else:  # Handle regular character input
-            if row-2 < len(text):
-                text[row-2].insert(col, chr(char))
-                col += 1
-            else:
-                text.append([chr(char)])
-                col = 1
+        elif char in [10, curses.KEY_ENTER]:  # Enter key splits the line
+            text.insert(row, text[row-2][col:])
+            text[row-2] = text[row-2][:col]
+            row += 1
+            col = 0
+        else:
+            # Insert character into the list
+            text[row-2].insert(col, chr(char))
+            col += 1
 
-        # Redraw text on the screen
         stdscr.clear()
         draw_menu(stdscr)
         for r, line in enumerate(text, 2):
