@@ -23,7 +23,7 @@
         {"text": "Marcetux", "line": 6},
         {"text": "Lincoln Heights, CA USA", "line": 7},
         {"text": "NOTE: The WPLike System is using \\WP51_ROOT", "line": 9},
-        {"text": "Please wait *", "line": 10}
+        {"text": "Press any key to continue... ♪", "line": 10}
     ],
     "colors": {
         "main_background": [1, "COLOR_WHITE", "COLOR_CYAN"],

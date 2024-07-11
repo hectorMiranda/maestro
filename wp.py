@@ -74,7 +74,6 @@ def draw_status_bar(stdscr, filename, pos_info, current_task):
 
 
 def add_centered_str(box, line_number, text, box_width, color_pair):
-    # Calculate the centered position and add the string
     center_pos = (box_width - len(text)) // 2
     box.addstr(line_number, center_pos, text, color_pair)
 
@@ -91,9 +90,7 @@ def splash_screen(stdscr):
     box.bkgd(curses.color_pair(config["colors"]["splash_box"][0]))
     box.box()
 
-    # Example text updated to include a musical note
-    splash_texts = config["splash_screen"]  # Assuming your splash text is configured in JSON
-    splash_texts.append({"text": "Loading... ♪", "line": 11})  # Adding a musical note
+    splash_texts = config["splash_screen"]  
 
     for item in splash_texts:
         text = item["text"]
@@ -109,14 +106,15 @@ def load_plugins():
             if file.endswith('.py'):
                 plugin_name = file[:-3]
                 plugin_module = __import__(f'{plugin_dir}.{plugin_name}', fromlist=[plugin_name])
-                # Assume plugins are handled internally
-
-
+                # TODO: Add plugin to menu
     
 def handle_file_saving(stdscr, filename, text):
     if not filename:
         filename = "untitled.txt"
-    full_path = os.path.join('WP51_ROOT', filename)
+    abspath = os.path.abspath(__file__) 
+    dname = os.path.dirname(abspath)
+    
+    full_path = os.path.join(dname, filename)
     with open(full_path, 'w') as file:
         for line in text:
             file.write("".join(line) + "\n")  # Join each line and append a newline character
@@ -126,7 +124,7 @@ def handle_file_loading(stdscr, filename, text):
     if not filename:
         show_modal(stdscr, "No filename provided. Press any key to continue...")
         return text  # Return existing text or empty to avoid further errors
-    full_path = os.path.join('WP51_ROOT', filename)  
+    full_path = os.path.join('.', filename)  
     if os.path.exists(full_path):
         with open(full_path, 'r') as file:
             lines = file.readlines()
@@ -170,8 +168,6 @@ def main(stdscr):
         show_modal(stdscr, "Wide character support enabled.")
     else:
         show_modal(stdscr, "Wide character support not enabled. Functionality may be limited.")
-
-
 
     splash_screen(stdscr)
     draw_menu(stdscr)
@@ -220,6 +216,12 @@ def main(stdscr):
             text.insert(row, [])
             row += 1
             col = 0
+        elif char == curses.KEY_DOWN:
+            if row < len(text):  # Make sure there is a line below to move to
+                row += 1
+                col = min(col, len(text[row-2]))  # Ensure cursor does not exceed the current line length
+
+        
         if char == curses.KEY_BACKSPACE or char == 127:
             if col > 0:
                 # Remove a character from the list
@@ -235,10 +237,11 @@ def main(stdscr):
             text[row-2] = text[row-2][:col]
             row += 1
             col = 0
-        else:
-            # Insert character into the list
-            text[row-2].insert(col, chr(char))
-            col += 1
+        # else:
+        #     # Insert character into the list
+        #     text[row-2].insert(col, chr(char))
+        #     col += 1
+        
 
         stdscr.clear()
         draw_menu(stdscr)
