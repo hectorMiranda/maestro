@@ -163,6 +163,8 @@ def main(stdscr):
     curses.noecho()     # Turn off auto echoing of keypress on to screen
     curses.cbreak()     # React to keys instantly, without requiring the Enter key to be pressed
     stdscr.keypad(True) # Enable keypad mode to handle special keys like arrow keys
+    stdscr.nodelay(True)  # Set stdscr to non-blocking mode
+    stdscr.timeout(100)  # Wait 100 milliseconds for a key press
 
     if 'ncursesw' in curses.__file__:
         show_modal(stdscr, "Wide character support enabled.")
@@ -170,7 +172,7 @@ def main(stdscr):
         show_modal(stdscr, "Wide character support not enabled. Functionality may be limited.")
 
     splash_screen(stdscr)
-    draw_menu(stdscr)
+    #draw_menu(stdscr)
     stdscr.refresh()
 
     filename = None
@@ -192,6 +194,7 @@ def main(stdscr):
 
         if char == 27:  # ASCII code for ESC
             draw_status_bar(stdscr, filename if filename else "BYE!", f"Doc 1 Pg 1 Ln {row} Pos {col}", "ESC")
+            draw_menu(stdscr)
 
             break
         elif char == curses.KEY_UP and row > 2:  
@@ -244,7 +247,7 @@ def main(stdscr):
         
 
         stdscr.clear()
-        draw_menu(stdscr)
+        #draw_menu(stdscr)
         for r, line in enumerate(text, 2):
             stdscr.addstr(r, 0, "".join(line))
         stdscr.refresh()
