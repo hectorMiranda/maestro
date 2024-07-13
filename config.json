@@ -23,11 +23,11 @@
         {"text": "Marcetux", "line": 6},
         {"text": "Lincoln Heights, CA USA", "line": 7},
         {"text": "NOTE: The WPLike System is using \\WP51_ROOT", "line": 9},
-        {"text": "Press any key to continue... ♪", "line": 10}
+        {"text": "Loading... ♪", "line": 10}
     ],
     "colors": {
-        "main_background": [1, "COLOR_WHITE", "COLOR_CYAN"],
-        "splash_box": [2, "COLOR_BLUE", "COLOR_WHITE"],
-        "default_background": [3, "COLOR_WHITE", "COLOR_BLUE"]
+    "splash_box": [1, "COLOR_WHITE", "COLOR_BLUE"],
+    "menu": [2, "COLOR_BLACK", "COLOR_CYAN"],
+    "status_bar": [3, "COLOR_WHITE", "COLOR_BLACK"]
     }
 }

@@ -29,8 +29,10 @@ def setup_directory():
         os.makedirs(root_dir)
 
 def setup_colors():
+    curses.start_color()
     for key, (idx, fg, bg) in config["colors"].items():
         curses.init_pair(idx, getattr(curses, fg), getattr(curses, bg))
+
 
 def draw_menu(stdscr):
     menu_items = config["menu_items"]
@@ -43,8 +45,6 @@ def draw_menu(stdscr):
         stdscr.addstr(0, x_pos + hotkey_idx, title[hotkey_idx], curses.A_REVERSE | curses.A_UNDERLINE)
         stdscr.addstr(0, x_pos + hotkey_idx + 1, title[hotkey_idx + 1:], curses.A_REVERSE)
         x_pos += len(title) + 2
-
-
     
 def show_menu_options(stdscr, title):
     options = config["menu_items"][title.lower()][1]
@@ -59,8 +59,6 @@ def show_menu_options(stdscr, title):
     menu_win.refresh()
 
 def draw_status_bar(stdscr, filename, pos_info, current_task):
-    
-    
     h, w = stdscr.getmaxyx()
     
     if current_task is None:
@@ -90,7 +88,7 @@ def splash_screen(stdscr):
     box.bkgd(curses.color_pair(config["colors"]["splash_box"][0]))
     box.box()
 
-    splash_texts = config["splash_screen"]  
+    splash_texts = config["splash_screen"]
 
     for item in splash_texts:
         text = item["text"]
@@ -98,6 +96,8 @@ def splash_screen(stdscr):
         add_centered_str(box, line_number, text, box_width, curses.color_pair(config["colors"]["splash_box"][0]))
 
     box.refresh()
+    time.sleep(2)
+
 
 def load_plugins():
     plugin_dir = config["directories"]["plugins"]
@@ -159,6 +159,8 @@ def get_user_input(stdscr, prompt):
 def main(stdscr):
 
     setup_directory()
+    setup_colors()
+
     curses.curs_set(2)  # Cursor visible and blinking
     curses.noecho()     # Turn off auto echoing of keypress on to screen
     curses.cbreak()     # React to keys instantly, without requiring the Enter key to be pressed
@@ -172,7 +174,6 @@ def main(stdscr):
         show_modal(stdscr, "Wide character support not enabled. Functionality may be limited.")
 
     splash_screen(stdscr)
-    #draw_menu(stdscr)
     stdscr.refresh()
 
     filename = None
@@ -189,19 +190,16 @@ def main(stdscr):
     while True:
         draw_status_bar(stdscr, filename if filename else "unknown", f"Doc 1 Pg 1 Ln {row} Pos {col}", None)
         stdscr.move(row, col)
-        
         char = stdscr.getch()
 
         if char == 27:  # ASCII code for ESC
             draw_status_bar(stdscr, filename if filename else "BYE!", f"Doc 1 Pg 1 Ln {row} Pos {col}", "ESC")
             draw_menu(stdscr)
-
             break
         elif char == curses.KEY_UP and row > 2:  
             row -= 1
             col = min(col, len(text[row-2]))
             draw_status_bar(stdscr, filename if filename else "unknown", f"Doc 1 Pg 1 Ln {row} Pos {col}", "UP")
-
         elif char == curses.KEY_DOWN and row < len(text):  # Move cursor down
             row += 1
             col = min(col, len(text[row-2]))
@@ -223,15 +221,11 @@ def main(stdscr):
             if row < len(text):  # Make sure there is a line below to move to
                 row += 1
                 col = min(col, len(text[row-2]))  # Ensure cursor does not exceed the current line length
-
-        
         if char == curses.KEY_BACKSPACE or char == 127:
             if col > 0:
-                # Remove a character from the list
                 del text[row-2][col-1]
                 col -= 1
             elif row > 2:
-                # Merge current line with the previous one
                 col = len(text[row-3])
                 text[row-3].extend(text.pop(row-2))
                 row -= 1
@@ -240,16 +234,12 @@ def main(stdscr):
             text[row-2] = text[row-2][:col]
             row += 1
             col = 0
-        # else:
-        #     # Insert character into the list
-        #     text[row-2].insert(col, chr(char))
-        #     col += 1
-        
-
+    
         stdscr.clear()
-        #draw_menu(stdscr)
         for r, line in enumerate(text, 2):
             stdscr.addstr(r, 0, "".join(line))
         stdscr.refresh()
+
+
 
 curses.wrapper(main)
