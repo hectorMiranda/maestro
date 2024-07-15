@@ -17,6 +17,18 @@ def show_modal(stdscr, message):
     modal_win.clear()
     modal_win.refresh()
 
+def show_fast_modal(stdscr, message):
+    h, w = stdscr.getmaxyx()
+    modal_width = max(20, len(message) + 4)
+    modal_height = 3
+    modal_win = curses.newwin(modal_height, modal_width, (h - modal_height) // 2, (w - modal_width) // 2)
+    modal_win.box()
+    modal_win.addstr(1, (modal_width - len(message)) // 2, message)
+    modal_win.refresh()
+    time.sleep(1.5)
+    modal_win.clear()
+    modal_win.refresh()
+
 def load_config():
     with open('config.json', 'r') as file:
         return json.load(file)
@@ -45,6 +57,7 @@ def draw_menu(stdscr):
         stdscr.addstr(0, x_pos + hotkey_idx, title[hotkey_idx], curses.A_REVERSE | curses.A_UNDERLINE)
         stdscr.addstr(0, x_pos + hotkey_idx + 1, title[hotkey_idx + 1:], curses.A_REVERSE)
         x_pos += len(title) + 2
+    #stdscr.refresh()
     
 def show_menu_options(stdscr, title):
     options = config["menu_items"][title.lower()][1]
@@ -55,8 +68,8 @@ def show_menu_options(stdscr, title):
         menu_win.addstr(idx + 1, 1, option)
     menu_win.refresh()
     menu_win.getch()
-    menu_win.clear()
-    menu_win.refresh()
+    # menu_win.clear()
+    # menu_win.refresh()
 
 def draw_status_bar(stdscr, filename, pos_info, current_task):
     h, w = stdscr.getmaxyx()
@@ -96,7 +109,7 @@ def splash_screen(stdscr):
         add_centered_str(box, line_number, text, box_width, curses.color_pair(config["colors"]["splash_box"][0]))
 
     box.refresh()
-    time.sleep(2)
+    time.sleep(1)
 
 
 def load_plugins():
@@ -157,7 +170,6 @@ def get_user_input(stdscr, prompt):
     return input.decode()
 
 def main(stdscr):
-
     setup_directory()
     setup_colors()
 
@@ -169,11 +181,12 @@ def main(stdscr):
     stdscr.timeout(100)  # Wait 100 milliseconds for a key press
 
     if 'ncursesw' in curses.__file__:
-        show_modal(stdscr, "Wide character support enabled.")
+        show_fast_modal(stdscr, "Wide character support enabled.")
     else:
-        show_modal(stdscr, "Wide character support not enabled. Functionality may be limited.")
+        show_fast_modal(stdscr, "Wide character support not enabled. Functionality may be limited.")
 
     splash_screen(stdscr)
+    stdscr.clear()
     stdscr.refresh()
 
     filename = None
@@ -181,11 +194,9 @@ def main(stdscr):
     text, filename = open_file_from_command_line(stdscr)
     
     if not text:  
-        text = [[]] #list of lists
+        text = [[]]  # list of lists
     
     row, col = 2, 0  # Start below the menu
-    
-    open_file_from_command_line(stdscr)
     
     while True:
         draw_status_bar(stdscr, filename if filename else "unknown", f"Doc 1 Pg 1 Ln {row} Pos {col}", None)
@@ -193,19 +204,24 @@ def main(stdscr):
         char = stdscr.getch()
 
         if char == 27:  # ASCII code for ESC
-            draw_status_bar(stdscr, filename if filename else "BYE!", f"Doc 1 Pg 1 Ln {row} Pos {col}", "ESC")
+            stdscr.clear()  # Clear the screen before drawing the menu
             draw_menu(stdscr)
-            break
-        elif char == curses.KEY_UP and row > 2:  
+            stdscr.getch()  # Wait for a key press to exit the menu
+            continue
+        elif char == curses.KEY_UP and row > 2:
             row -= 1
-            col = min(col, len(text[row-2]))
+            col = min(col, len(text[row - 2]))
             draw_status_bar(stdscr, filename if filename else "unknown", f"Doc 1 Pg 1 Ln {row} Pos {col}", "UP")
-        elif char == curses.KEY_DOWN and row < len(text):  # Move cursor down
+        elif char == curses.KEY_DOWN and row < len(text) + 1:  # Move cursor down
             row += 1
-            col = min(col, len(text[row-2]))
+            if row <= len(text):
+                col = min(col, len(text[row - 2]))
+            else:
+                text.append([])
+                col = 0
         elif char == curses.KEY_LEFT and col > 0:  # Move cursor left
             col -= 1
-        elif char == curses.KEY_RIGHT and col < len(text[row-2]):  # Move cursor right
+        elif char == curses.KEY_RIGHT and col < len(text[row - 2]):  # Move cursor right
             col += 1
         elif char == curses.KEY_F3:  # F3 to quit
             break
@@ -214,31 +230,37 @@ def main(stdscr):
         elif char == curses.KEY_F2:  # F2 to load
             text = handle_file_loading(stdscr, filename, text)
         elif char == 10:  # Handle Enter key
-            text.insert(row, [])
+            text.insert(row - 1, [])
             row += 1
             col = 0
-        elif char == curses.KEY_DOWN:
-            if row < len(text):  # Make sure there is a line below to move to
-                row += 1
-                col = min(col, len(text[row-2]))  # Ensure cursor does not exceed the current line length
-        if char == curses.KEY_BACKSPACE or char == 127:
+        elif char == curses.KEY_BACKSPACE or char == 127:
             if col > 0:
-                del text[row-2][col-1]
+                del text[row - 2][col - 1]
                 col -= 1
             elif row > 2:
-                col = len(text[row-3])
-                text[row-3].extend(text.pop(row-2))
+                col = len(text[row - 3])
+                text[row - 3].extend(text.pop(row - 2))
                 row -= 1
         elif char in [10, curses.KEY_ENTER]:  # Enter key splits the line
-            text.insert(row, text[row-2][col:])
-            text[row-2] = text[row-2][:col]
+            text.insert(row, text[row - 2][col:])
+            text[row - 2] = text[row - 2][:col]
             row += 1
             col = 0
+        elif 32 <= char <= 126:  # Handle printable characters
+            text[row - 2].insert(col, chr(char))
+            col += 1
     
         stdscr.clear()
+        h, w = stdscr.getmaxyx()
         for r, line in enumerate(text, 2):
-            stdscr.addstr(r, 0, "".join(line))
+            try:
+                if r < h:  # Ensure the row is within the screen height
+                    stdscr.addstr(r, 0, "".join(line[:w]))  # Ensure the line is within the screen width
+            except curses.error:
+                pass  # Ignore errors when adding strings outside the screen boundaries
         stdscr.refresh()
+
+curses.wrapper(main)
 
 
 
