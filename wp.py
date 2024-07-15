@@ -29,6 +29,21 @@ def show_fast_modal(stdscr, message):
     modal_win.clear()
     modal_win.refresh()
 
+def get_user_input(stdscr, prompt):
+    h, w = stdscr.getmaxyx()
+    modal_width = max(30, len(prompt) + 20)
+    modal_height = 5
+    modal_win = curses.newwin(modal_height, modal_width, (h - modal_height) // 2, (w - modal_width) // 2)
+    curses.echo()
+    modal_win.box()
+    modal_win.addstr(1, 2, prompt)
+    modal_win.refresh()
+    user_input = modal_win.getstr(2, 2, 20)
+    curses.noecho()
+    modal_win.clear()
+    stdscr.refresh()
+    return user_input.decode()
+
 def load_config():
     with open('config.json', 'r') as file:
         return json.load(file)
@@ -123,7 +138,7 @@ def load_plugins():
     
 def handle_file_saving(stdscr, filename, text):
     if not filename:
-        filename = "untitled.txt"
+        filename = get_user_input(stdscr, "Enter filename: ")
     abspath = os.path.abspath(__file__) 
     dname = os.path.dirname(abspath)
     
@@ -160,14 +175,6 @@ def handle_backspace(text, stdscr, row, col):
         text[row-2] = text[row-2][:-1]
         stdscr.delch(row, col)
     return col
-
-def get_user_input(stdscr, prompt):
-    stdscr.addstr(prompt)
-    stdscr.refresh()
-    curses.echo()
-    input = stdscr.getstr()
-    curses.noecho()
-    return input.decode()
 
 def main(stdscr):
     setup_directory()
@@ -259,9 +266,5 @@ def main(stdscr):
             except curses.error:
                 pass  # Ignore errors when adding strings outside the screen boundaries
         stdscr.refresh()
-
-curses.wrapper(main)
-
-
 
 curses.wrapper(main)
