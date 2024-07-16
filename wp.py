@@ -234,6 +234,7 @@ def main(stdscr):
             break
         elif char == curses.KEY_F1:  # F1 to save
             filename = handle_file_saving(stdscr, filename, text)
+            continue
         elif char == curses.KEY_F2:  # F2 to load
             text = handle_file_loading(stdscr, filename, text)
         elif char == 10:  # Handle Enter key
