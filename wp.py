@@ -44,6 +44,30 @@ def get_user_input(stdscr, prompt):
     stdscr.refresh()
     return user_input.decode()
 
+def show_file_selector(stdscr, files):
+    h, w = stdscr.getmaxyx()
+    modal_width = max(40, max(len(f) for f in files) + 4)
+    modal_height = len(files) + 4
+    modal_win = curses.newwin(modal_height, modal_width, (h - modal_height) // 2, (w - modal_width) // 2)
+    modal_win.box()
+    selected = 0
+    while True:
+        for idx, file in enumerate(files):
+            if idx == selected:
+                modal_win.addstr(idx + 2, 2, file, curses.A_REVERSE)
+            else:
+                modal_win.addstr(idx + 2, 2, file)
+        modal_win.refresh()
+        key = modal_win.getch()
+        if key == curses.KEY_UP and selected > 0:
+            selected -= 1
+        elif key == curses.KEY_DOWN and selected < len(files) - 1:
+            selected += 1
+        elif key == curses.KEY_ENTER or key == 10:
+            return files[selected]
+        elif key == 27:  # ESC key to cancel
+            return None
+
 def load_config():
     with open('config.json', 'r') as file:
         return json.load(file)
@@ -236,7 +260,11 @@ def main(stdscr):
             filename = handle_file_saving(stdscr, filename, text)
             continue
         elif char == curses.KEY_F2:  # F2 to load
-            text = handle_file_loading(stdscr, filename, text)
+            files = os.listdir('.')
+            selected_file = show_file_selector(stdscr, files)
+            if selected_file:
+                text = handle_file_loading(stdscr, selected_file, [])
+                filename = selected_file
         elif char == 10:  # Handle Enter key
             text.insert(row - 1, [])
             row += 1
