@@ -110,7 +110,7 @@ def show_menu_options(stdscr, title):
     # menu_win.clear()
     # menu_win.refresh()
 
-def draw_status_bar(stdscr, filename, pos_info, current_task):
+def draw_status_bar(stdscr, filename, pos_info, current_task, highlight=False):
     h, w = stdscr.getmaxyx()
     
     if current_task is None:
@@ -119,8 +119,13 @@ def draw_status_bar(stdscr, filename, pos_info, current_task):
     if filename is None:
         filename = "unknown"
     status = f"{current_task} | {filename}    {pos_info}"
-    stdscr.addstr(h - 1, 0, status[:w-1])  # Fill the status bar and truncate if longer than width
-    stdscr.clrtoeol()  # Clear to end of line to avoid duplication or leftover characters
+    
+    if highlight:
+        stdscr.addstr(h - 1, 0, status[:w-1], curses.A_BOLD)  # Highlighted status
+    else:
+        stdscr.addstr(h - 1, 0, status[:w-1])  # Normal status
+    
+    stdscr.clrtoeol()
 
 
 def add_centered_str(box, line_number, text, box_width, color_pair):
@@ -201,6 +206,9 @@ def handle_backspace(text, stdscr, row, col):
     return col
 
 def main(stdscr):
+    stdscr = curses.initscr()
+    curses.start_color()
+    
     setup_directory()
     setup_colors()
 
@@ -255,6 +263,7 @@ def main(stdscr):
         elif char == curses.KEY_RIGHT and col < len(text[row - 2]):  # Move cursor right
             col += 1
         elif char == curses.KEY_F3:  # F3 to quit
+            curses.endwin()
             break
         elif char == curses.KEY_F1:  # F1 to save
             filename = handle_file_saving(stdscr, filename, text)
