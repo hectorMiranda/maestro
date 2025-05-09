@@ -1,0 +1,11 @@
+[package]
+name = "maestro"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+midir = "0.9.1"
+midly = "0.5.3"
+rodio = "0.17.1"
+crossterm = "0.26.1"
+anyhow = "1.0.72" 
