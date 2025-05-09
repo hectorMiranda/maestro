@@ -1,22 +1,20 @@
-# MIDI Piano Learning Program
+# Maestro
 
-A Rust-based program for learning piano scales and chord progressions.
+A Rust-based program for learning piano scales, chord progressions, and playing Mozart pieces through a MIDI piano.
 
 ## Features
 
+- Lists all available MIDI input and output devices
 - Learn common piano scales (C Major, C Minor, G Major, A Minor)
 - Practice chord progressions (I-IV-V, ii-V-I, I-V-vi-IV)
-- Interactive terminal-based UI
-
-## Notes
-
-This program has two versions:
-1. **Simplified Version** (current): Doesn't require MIDI devices and doesn't have external dependencies
-2. **Full Version** (commented out in code): Includes MIDI device detection and interactive learning with external dependencies
+- Play Mozart pieces on a connected MIDI piano
+- Interactive terminal-based UI with piano keyboard visualization
+- Watch notes being played in real-time on the piano keyboard display
 
 ## Prerequisites
 
 - Rust and Cargo: [Install Rust](https://www.rust-lang.org/tools/install)
+- MIDI devices (required for MIDI playback)
 
 ## Installation
 
@@ -38,33 +36,46 @@ cargo run --release
 
 ### Main Menu Options
 
-1. **Learn Scales** - Display and learn common piano scales
-2. **Learn Chord Progressions** - Display and learn common chord progressions
-3. **Exit** - Exit the program
+1. **List MIDI Devices** - Displays all available MIDI input and output devices
+2. **Learn Scales** - Practice common piano scales
+3. **Learn Chord Progressions** - Practice common chord progressions
+4. **Play Mozart Pieces** - Play Mozart compositions on connected MIDI devices
+5. **Quit** - Exit the program
 
 ### Scale Learning
 
-The program displays the notes in each scale with proper note names (e.g., C4, D4, etc.).
+In the scale learning mode:
+- Press SPACE to advance to the next note in the scale
+- Watch the piano keyboard visualization show each note
+- Press ESC to return to the scale menu
 
 ### Chord Progression Learning
 
-The program displays the chords in each progression with proper note names.
+In the chord progression learning mode:
+- Press SPACE to advance to the next chord in the progression
+- Watch the piano keyboard visualization show each chord
+- Press ESC to return to the chord progression menu
 
-## Full Version Features (currently commented out)
+### Mozart Pieces
 
-The full version includes:
-- MIDI device detection and listing
-- Interactive scale and chord progression learning
-- Terminal UI using crossterm
+The program includes the following Mozart pieces:
+1. **Eine Kleine Nachtmusik** - First movement of Serenade No. 13 for strings in G major
+2. **Turkish March** - Rondo Alla Turca from Piano Sonata No. 11
+3. **Symphony No. 40** - First movement of Symphony No. 40 in G minor
 
-To use the full version, you'll need to install the following dependencies in your Cargo.toml:
-```
-midir = "0.9.1"
-midly = "0.5.3"
-rodio = "0.17.1"
-crossterm = "0.26.1"
-anyhow = "1.0.72"
-```
+When playing a Mozart piece:
+- Notes are sent to your connected MIDI device
+- The piano keyboard visualization shows each note as it's played
+- Press ESC at any time to stop playback
+
+## MIDI Setup
+
+To play Mozart pieces:
+1. Connect your MIDI piano to your computer
+2. Select "Play Mozart Pieces" from the main menu
+3. Choose a piece to play
+4. Select the MIDI output device from the list
+5. Enjoy the music!
 
 ## MIDI Note Reference
 
