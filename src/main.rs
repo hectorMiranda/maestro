@@ -11,7 +11,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 // Feature flag to run in simplified mode without MIDI dependencies
-const SIMPLIFIED_MODE: bool = true;
+const SIMPLIFIED_MODE: bool = false;
 
 // Define common musical scales
 struct Scale {
@@ -307,21 +307,27 @@ fn connect_to_midi_output(port_index: usize) -> Result<(MidiOutput, MidiOutputPo
     Ok((midi_out, port))
 }
 
-fn play_mozart_piece(piece_name: &str, midi_out: &mut MidiOutput, port: &MidiOutputPort) -> Result<()> {
-    let conn_out = midi_out.connect(port, "maestro-output")?;
+fn play_mozart_piece(piece_name: &str, midi_out: MidiOutput, port: &MidiOutputPort) {
+    let conn_out = match midi_out.connect(port, "maestro-output") {
+        Ok(conn) => conn,
+        Err(e) => {
+            println!("Failed to connect to MIDI output: {}", e);
+            return;
+        }
+    };
     let pieces = get_mozart_pieces();
     let piece = pieces.iter().find(|p| p.name == piece_name);
     
     if piece.is_none() {
         println!("Piece not found!");
-        return Ok(());
+        return;
     }
     
     let notes = get_mozart_piece_data(piece_name);
     
     if notes.is_empty() {
         println!("No notes found for this piece!");
-        return Ok(());
+        return;
     }
     
     println!("Playing: {}", piece_name);
@@ -329,18 +335,18 @@ fn play_mozart_piece(piece_name: &str, midi_out: &mut MidiOutput, port: &MidiOut
     
     // Set up terminal for visualization
     let mut stdout = stdout();
-    enable_raw_mode()?;
-    stdout.execute(Clear(ClearType::All))?;
+    enable_raw_mode().unwrap();
+    stdout.execute(Clear(ClearType::All)).unwrap();
     
     // Display piano keyboard
-    draw_piano_keyboard(&mut stdout, None)?;
+    draw_piano_keyboard(&mut stdout, None).unwrap();
     
     let mut conn_out = Some(conn_out);
     
     for (note, velocity, duration) in notes {
         // Check for escape key to stop playback
-        if event::poll(Duration::from_millis(10))? {
-            if let Event::Key(KeyEvent { code: KeyCode::Esc, .. }) = event::read()? {
+        if event::poll(Duration::from_millis(10)).unwrap() {
+            if let Event::Key(KeyEvent { code: KeyCode::Esc, .. }) = event::read().unwrap() {
                 break;
             }
         }
@@ -351,7 +357,7 @@ fn play_mozart_piece(piece_name: &str, midi_out: &mut MidiOutput, port: &MidiOut
         }
         
         // Visualize note being played
-        draw_piano_keyboard(&mut stdout, Some(note))?;
+        draw_piano_keyboard(&mut stdout, Some(note)).unwrap();
         
         // Wait for duration
         thread::sleep(Duration::from_millis(duration as u64));
@@ -362,7 +368,7 @@ fn play_mozart_piece(piece_name: &str, midi_out: &mut MidiOutput, port: &MidiOut
         }
         
         // Clear visualization
-        draw_piano_keyboard(&mut stdout, None)?;
+        draw_piano_keyboard(&mut stdout, None).unwrap();
     }
     
     // Clean up connection explicitly to avoid errors
@@ -371,10 +377,8 @@ fn play_mozart_piece(piece_name: &str, midi_out: &mut MidiOutput, port: &MidiOut
     }
     
     // Restore terminal
-    disable_raw_mode()?;
-    stdout.execute(Clear(ClearType::All))?;
-    
-    Ok(())
+    disable_raw_mode().unwrap();
+    stdout.execute(Clear(ClearType::All)).unwrap();
 }
 
 fn draw_piano_keyboard(stdout: &mut io::Stdout, active_note: Option<u8>) -> Result<()> {
@@ -732,8 +736,8 @@ fn main() -> Result<()> {
                         match port_input.trim().parse::<usize>() {
                             Ok(port_idx) => {
                                 match connect_to_midi_output(port_idx) {
-                                    Ok((mut midi_out, port)) => {
-                                        play_mozart_piece("Eine Kleine Nachtmusik", &mut midi_out, &port)?;
+                                    Ok((midi_out, port)) => {
+                                        play_mozart_piece("Eine Kleine Nachtmusik", midi_out, &port);
                                     }
                                     Err(e) => {
                                         println!("Error connecting to MIDI device: {}", e);
@@ -763,8 +767,8 @@ fn main() -> Result<()> {
                         match port_input.trim().parse::<usize>() {
                             Ok(port_idx) => {
                                 match connect_to_midi_output(port_idx) {
-                                    Ok((mut midi_out, port)) => {
-                                        play_mozart_piece("Turkish March", &mut midi_out, &port)?;
+                                    Ok((midi_out, port)) => {
+                                        play_mozart_piece("Turkish March", midi_out, &port);
                                     }
                                     Err(e) => {
                                         println!("Error connecting to MIDI device: {}", e);
@@ -794,8 +798,8 @@ fn main() -> Result<()> {
                         match port_input.trim().parse::<usize>() {
                             Ok(port_idx) => {
                                 match connect_to_midi_output(port_idx) {
-                                    Ok((mut midi_out, port)) => {
-                                        play_mozart_piece("Symphony No. 40", &mut midi_out, &port)?;
+                                    Ok((midi_out, port)) => {
+                                        play_mozart_piece("Symphony No. 40", midi_out, &port);
                                     }
                                     Err(e) => {
                                         println!("Error connecting to MIDI device: {}", e);
