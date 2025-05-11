@@ -10,6 +10,9 @@ use std::io::{self, stdout, Write};
 use std::thread;
 use std::time::{Duration, Instant};
 
+// Feature flag to run in simplified mode without MIDI dependencies
+const SIMPLIFIED_MODE: bool = true;
+
 // Define common musical scales
 struct Scale {
     name: String,
@@ -601,6 +604,11 @@ fn learn_chord_progression(progression: &ChordProgression) -> Result<()> {
 }
 
 fn main() -> Result<()> {
+    if SIMPLIFIED_MODE {
+        simplified_main();
+        return Ok(());
+    }
+
     println!("Welcome to the Maestro Piano Learning Program!");
     
     let mut main_menu = true;
@@ -814,4 +822,117 @@ fn main() -> Result<()> {
     println!("\nThank you for using the Maestro Piano Learning Program!");
     
     Ok(())
+}
+
+fn simplified_main() {
+    println!("Welcome to the Maestro Piano Learning Program (Simplified Mode)!");
+    println!("Note: Running in simplified mode without MIDI functionality.");
+    
+    loop {
+        simplified_display_menu();
+        
+        let mut choice = String::new();
+        io::stdin().read_line(&mut choice).expect("Failed to read input");
+        
+        match choice.trim() {
+            "1" => {
+                // Scales menu
+                loop {
+                    simplified_display_scales_menu();
+                    
+                    let mut scale_choice = String::new();
+                    io::stdin().read_line(&mut scale_choice).expect("Failed to read input");
+                    
+                    match scale_choice.trim() {
+                        "1" => simplified_display_scale(&get_scale("c_major")),
+                        "2" => simplified_display_scale(&get_scale("c_minor")),
+                        "3" => simplified_display_scale(&get_scale("g_major")),
+                        "4" => simplified_display_scale(&get_scale("a_minor")),
+                        "5" => break,
+                        _ => println!("Invalid choice. Please try again."),
+                    }
+                }
+            }
+            "2" => {
+                // Chord progressions menu
+                loop {
+                    simplified_display_chord_progressions_menu();
+                    
+                    let mut chord_choice = String::new();
+                    io::stdin().read_line(&mut chord_choice).expect("Failed to read input");
+                    
+                    match chord_choice.trim() {
+                        "1" => simplified_display_chord_progression(&get_chord_progression("i_iv_v")),
+                        "2" => simplified_display_chord_progression(&get_chord_progression("ii_v_i")),
+                        "3" => simplified_display_chord_progression(&get_chord_progression("i_v_vi_iv")),
+                        "4" => break,
+                        _ => println!("Invalid choice. Please try again."),
+                    }
+                }
+            }
+            "3" => {
+                println!("Mozart playback is not available in simplified mode.");
+            }
+            "4" => {
+                println!("Thank you for using the Maestro Piano Learning Program!");
+                break;
+            }
+            _ => println!("Invalid choice. Please try again."),
+        }
+    }
+}
+
+fn simplified_display_menu() {
+    println!("\nMaestro Piano Learning Program (Simplified Mode)");
+    println!("---------------------------------------------");
+    println!("1. Learn Scales");
+    println!("2. Learn Chord Progressions");
+    println!("3. Play Mozart Pieces (Not Available)");
+    println!("4. Exit");
+    print!("\nEnter your choice: ");
+    io::stdout().flush().unwrap();
+}
+
+fn simplified_display_scales_menu() {
+    println!("\nScale Learning Menu");
+    println!("------------------");
+    println!("1. C Major Scale");
+    println!("2. C Minor Scale");
+    println!("3. G Major Scale");
+    println!("4. A Minor Scale");
+    println!("5. Back to Main Menu");
+    print!("\nEnter your choice: ");
+    io::stdout().flush().unwrap();
+}
+
+fn simplified_display_chord_progressions_menu() {
+    println!("\nChord Progression Learning Menu");
+    println!("------------------------------");
+    println!("1. I-IV-V (C-F-G)");
+    println!("2. ii-V-I (Dm-G-C)");
+    println!("3. I-V-vi-IV (C-G-Am-F)");
+    println!("4. Back to Main Menu");
+    print!("\nEnter your choice: ");
+    io::stdout().flush().unwrap();
+}
+
+fn simplified_display_scale(scale: &Scale) {
+    println!("\n{} Scale:", scale.name);
+    println!("Notes: ");
+    for note in &scale.notes {
+        print!("{} ", note_name(*note));
+    }
+    println!("\n");
+}
+
+fn simplified_display_chord_progression(progression: &ChordProgression) {
+    println!("\n{} Chord Progression:", progression.name);
+    for (i, chord) in progression.chords.iter().enumerate() {
+        print!("Chord {}: ", i + 1);
+        for note in chord {
+            print!("{} ", note_name(*note));
+        }
+        println!();
+    }
+    println!();
 } 
