@@ -9,6 +9,8 @@ use midly::{MidiMessage, Smf, TrackEventKind};
 use std::io::{self, stdout, Write};
 use std::thread;
 use std::time::{Duration, Instant};
+use std::sync::Mutex;
+use lazy_static::lazy_static;
 
 // Feature flag to run in simplified mode without MIDI dependencies
 const SIMPLIFIED_MODE: bool = false;
@@ -30,6 +32,105 @@ struct MozartPiece {
     name: String,
     filename: String,
     description: String,
+}
+
+lazy_static! {
+    static ref DEFAULT_MIDI_DEVICE: Mutex<Option<usize>> = Mutex::new(None);
+}
+
+fn set_default_midi_device() -> Result<()> {
+    println!("Select a MIDI Output device to set as default:");
+    list_midi_devices()?;
+    print!("Enter MIDI output device number: ");
+    io::stdout().flush()?;
+    let mut port_input = String::new();
+    io::stdin().read_line(&mut port_input)?;
+    match port_input.trim().parse::<usize>() {
+        Ok(port_idx) => {
+            *DEFAULT_MIDI_DEVICE.lock().unwrap() = Some(port_idx);
+            println!("Default MIDI output device set to #{}.", port_idx);
+        }
+        Err(_) => {
+            println!("Invalid port number");
+        }
+    }
+    thread::sleep(Duration::from_secs(2));
+    Ok(())
+}
+
+fn get_default_midi_output() -> Option<(MidiOutput, MidiOutputPort)> {
+    let idx = *DEFAULT_MIDI_DEVICE.lock().unwrap();
+    if let Some(port_idx) = idx {
+        if let Ok((midi_out, port)) = connect_to_midi_output(port_idx) {
+            return Some((midi_out, port));
+        }
+    }
+    None
+}
+
+fn framed_menu(title: &str, items: &[&str]) {
+    let width = items.iter().map(|s| s.len()).max().unwrap_or(0).max(title.len()) + 6;
+    let border = format!("+{}+", "-".repeat(width));
+    println!("{}", border);
+    println!("| {:^width$} |", title, width = width);
+    println!("{}", border);
+    for item in items {
+        println!("| {:<width$} |", item, width = width);
+    }
+    println!("{}", border);
+}
+
+fn display_menu() -> Result<()> {
+    let items = [
+        "1. List MIDI Devices",
+        "2. Learn Scales",
+        "3. Learn Chord Progressions",
+        "4. Play Mozart Pieces",
+        "5. Set Default MIDI Device",
+        "q. Quit"
+    ];
+    framed_menu("Maestro Piano Learning Program", &items);
+    print!("Enter your choice: ");
+    io::stdout().flush()?;
+    Ok(())
+}
+
+fn display_scales_menu() -> Result<()> {
+    let items = [
+        "1. C Major Scale",
+        "2. C Minor Scale",
+        "3. G Major Scale",
+        "4. A Minor Scale",
+        "b. Back to Main Menu"
+    ];
+    framed_menu("Scale Learning Menu", &items);
+    print!("Enter your choice: ");
+    io::stdout().flush()?;
+    Ok(())
+}
+
+fn display_chord_progressions_menu() -> Result<()> {
+    let items = [
+        "1. I-IV-V (C-F-G)",
+        "2. ii-V-I (Dm-G-C)",
+        "3. I-V-vi-IV (C-G-Am-F)",
+        "b. Back to Main Menu"
+    ];
+    framed_menu("Chord Progression Learning Menu", &items);
+    print!("Enter your choice: ");
+    io::stdout().flush()?;
+    Ok(())
+}
+
+fn display_mozart_menu() -> Result<()> {
+    let pieces = get_mozart_pieces();
+    let mut items: Vec<String> = pieces.iter().enumerate().map(|(i, p)| format!("{}. {} - {}", i+1, p.name, p.description)).collect();
+    items.push("b. Back to Main Menu".to_string());
+    let ref_items: Vec<&str> = items.iter().map(|s| s.as_str()).collect();
+    framed_menu("Mozart Pieces Menu", &ref_items);
+    print!("Enter your choice: ");
+    io::stdout().flush()?;
+    Ok(())
 }
 
 fn get_mozart_pieces() -> Vec<MozartPiece> {
@@ -229,56 +330,6 @@ fn display_chord_progression(progression: &ChordProgression) {
     println!();
 }
 
-fn display_menu() -> Result<()> {
-    let mut stdout = stdout();
-    stdout.execute(Clear(ClearType::All))?;
-    
-    println!("\nMaestro Piano Learning Program");
-    println!("-----------------------------");
-    println!("1. List MIDI Devices");
-    println!("2. Learn Scales");
-    println!("3. Learn Chord Progressions");
-    println!("4. Play Mozart Pieces");
-    println!("q. Quit");
-    print!("\nEnter your choice: ");
-    stdout.flush()?;
-    
-    Ok(())
-}
-
-fn display_scales_menu() -> Result<()> {
-    let mut stdout = stdout();
-    stdout.execute(Clear(ClearType::All))?;
-    
-    println!("\nScale Learning Menu");
-    println!("------------------");
-    println!("1. C Major Scale");
-    println!("2. C Minor Scale");
-    println!("3. G Major Scale");
-    println!("4. A Minor Scale");
-    println!("b. Back to Main Menu");
-    print!("\nEnter your choice: ");
-    stdout.flush()?;
-    
-    Ok(())
-}
-
-fn display_chord_progressions_menu() -> Result<()> {
-    let mut stdout = stdout();
-    stdout.execute(Clear(ClearType::All))?;
-    
-    println!("\nChord Progression Learning Menu");
-    println!("------------------------------");
-    println!("1. I-IV-V (C-F-G)");
-    println!("2. ii-V-I (Dm-G-C)");
-    println!("3. I-V-vi-IV (C-G-Am-F)");
-    println!("b. Back to Main Menu");
-    print!("\nEnter your choice: ");
-    stdout.flush()?;
-    
-    Ok(())
-}
-
 // MIDI functionality
 fn list_midi_devices() -> Result<()> {
     println!("Available MIDI Input Devices:");
@@ -465,26 +516,7 @@ fn is_white_key(note: u8) -> bool {
     }
 }
 
-fn display_mozart_menu() -> Result<()> {
-    let mut stdout = stdout();
-    stdout.execute(Clear(ClearType::All))?;
-    
-    println!("Mozart Pieces Menu");
-    println!("------------------");
-    
-    let pieces = get_mozart_pieces();
-    for (i, piece) in pieces.iter().enumerate() {
-        println!("{}. {} - {}", i + 1, piece.name, piece.description);
-    }
-    
-    println!("b. Back to Main Menu");
-    print!("\nEnter your choice: ");
-    stdout.flush()?;
-    
-    Ok(())
-}
-
-fn learn_scale(scale: &Scale) -> Result<()> {
+fn learn_scale(scale: &Scale, midi_out_opt: Option<(MidiOutput, MidiOutputPort)>) -> Result<()> {
     let mut stdout = stdout();
     enable_raw_mode()?;
     stdout.execute(Clear(ClearType::All))?;
@@ -494,11 +526,13 @@ fn learn_scale(scale: &Scale) -> Result<()> {
 
     let mut current_note_idx = 0;
     let total_notes = scale.notes.len();
+    let mut conn_out = midi_out_opt.map(|(midi_out, port)| midi_out.connect(&port, "maestro-scale").ok()).flatten();
 
     loop {
         // Display current progress
         stdout.execute(crossterm::cursor::MoveTo(0, 3))?;
-        let note_name = match scale.notes[current_note_idx] % 12 {
+        let note = scale.notes[current_note_idx];
+        let note_name = match note % 12 {
             0 => "C",
             1 => "C#",
             2 => "D",
@@ -514,16 +548,18 @@ fn learn_scale(scale: &Scale) -> Result<()> {
             _ => unreachable!(),
         };
         println!("Current note: {} (Note {} of {})", note_name, current_note_idx + 1, total_notes);
-        
-        // Show piano visualization
-        draw_piano_keyboard(&mut stdout, Some(scale.notes[current_note_idx]))?;
-        
+        draw_piano_keyboard(&mut stdout, Some(note))?;
         if event::poll(Duration::from_millis(100))? {
             if let Event::Key(KeyEvent { code, .. }) = event::read()? {
                 match code {
                     KeyCode::Esc => break,
                     KeyCode::Char(' ') => {
-                        // Simulate playing the note
+                        // Play the note via MIDI if available
+                        if let Some(ref mut conn) = conn_out {
+                            let _ = conn.send(&[0x90, note, 100]);
+                            thread::sleep(Duration::from_millis(300));
+                            let _ = conn.send(&[0x80, note, 0]);
+                        }
                         println!("Playing note: {}", note_name);
                         current_note_idx = (current_note_idx + 1) % total_notes;
                     }
@@ -532,69 +568,56 @@ fn learn_scale(scale: &Scale) -> Result<()> {
             }
         }
     }
-
+    if let Some(conn) = conn_out.take() {
+        drop(conn);
+    }
     disable_raw_mode()?;
     Ok(())
 }
 
-fn learn_chord_progression(progression: &ChordProgression) -> Result<()> {
+fn learn_chord_progression(progression: &ChordProgression, midi_out_opt: Option<(MidiOutput, MidiOutputPort)>) -> Result<()> {
     let mut stdout = stdout();
     enable_raw_mode()?;
     stdout.execute(Clear(ClearType::All))?;
-
     println!("Learning {} Chord Progression", progression.name);
     println!("Press SPACE to advance through the chord progression. Press ESC to exit.");
-
     let mut current_chord_idx = 0;
     let total_chords = progression.chords.len();
-
+    let mut conn_out = midi_out_opt.map(|(midi_out, port)| midi_out.connect(&port, "maestro-chord").ok()).flatten();
     loop {
-        // Display current chord
         stdout.execute(crossterm::cursor::MoveTo(0, 3))?;
         let chord_numeral = match current_chord_idx {
             0 => "I",
             1 => "IV",
-            2 => "V", 
+            2 => "V",
             3 => "vi",
             _ => "?",
         };
-        
         print!("Current chord: {} ({} of {}): ", chord_numeral, current_chord_idx + 1, total_chords);
-        
-        // Display notes in chord
         for note in &progression.chords[current_chord_idx] {
             let note_name = match note % 12 {
-                0 => "C",
-                1 => "C#",
-                2 => "D",
-                3 => "D#",
-                4 => "E",
-                5 => "F",
-                6 => "F#",
-                7 => "G",
-                8 => "G#",
-                9 => "A",
-                10 => "A#",
-                11 => "B",
-                _ => unreachable!(),
+                0 => "C", 1 => "C#", 2 => "D", 3 => "D#", 4 => "E", 5 => "F", 6 => "F#", 7 => "G", 8 => "G#", 9 => "A", 10 => "A#", 11 => "B", _ => unreachable!(),
             };
             print!("{} ", note_name);
         }
         println!();
         stdout.flush()?;
-        
-        // Show piano visualization with chord
-        for note in &progression.chords[current_chord_idx] {
-            draw_piano_keyboard(&mut stdout, Some(*note))?;
-            thread::sleep(Duration::from_millis(300));
-        }
-        
+        draw_piano_keyboard(&mut stdout, None)?;
         if event::poll(Duration::from_millis(100))? {
             if let Event::Key(KeyEvent { code, .. }) = event::read()? {
                 match code {
                     KeyCode::Esc => break,
                     KeyCode::Char(' ') => {
-                        // Advance to next chord
+                        // Play the chord via MIDI if available
+                        if let Some(ref mut conn) = conn_out {
+                            for note in &progression.chords[current_chord_idx] {
+                                let _ = conn.send(&[0x90, *note, 100]);
+                            }
+                            thread::sleep(Duration::from_millis(400));
+                            for note in &progression.chords[current_chord_idx] {
+                                let _ = conn.send(&[0x80, *note, 0]);
+                            }
+                        }
                         current_chord_idx = (current_chord_idx + 1) % total_chords;
                     }
                     _ => {}
@@ -602,7 +625,9 @@ fn learn_chord_progression(progression: &ChordProgression) -> Result<()> {
             }
         }
     }
-
+    if let Some(conn) = conn_out.take() {
+        drop(conn);
+    }
     disable_raw_mode()?;
     Ok(())
 }
@@ -656,6 +681,12 @@ fn main() -> Result<()> {
                         mozart_menu = true;
                         display_mozart_menu()?;
                     }
+                    KeyCode::Char('5') if main_menu => {
+                        disable_raw_mode()?;
+                        set_default_midi_device()?;
+                        enable_raw_mode()?;
+                        display_menu()?;
+                    }
                     // Handle scale menu
                     KeyCode::Char('b') if scales_menu => {
                         main_menu = true;
@@ -664,29 +695,33 @@ fn main() -> Result<()> {
                     }
                     KeyCode::Char('1') if scales_menu => {
                         disable_raw_mode()?;
+                        let midi_out_opt = get_default_midi_output();
                         let scale = get_scale("c_major");
-                        learn_scale(&scale)?;
+                        learn_scale(&scale, midi_out_opt)?;
                         enable_raw_mode()?;
                         display_scales_menu()?;
                     }
                     KeyCode::Char('2') if scales_menu => {
                         disable_raw_mode()?;
+                        let midi_out_opt = get_default_midi_output();
                         let scale = get_scale("c_minor");
-                        learn_scale(&scale)?;
+                        learn_scale(&scale, midi_out_opt)?;
                         enable_raw_mode()?;
                         display_scales_menu()?;
                     }
                     KeyCode::Char('3') if scales_menu => {
                         disable_raw_mode()?;
+                        let midi_out_opt = get_default_midi_output();
                         let scale = get_scale("g_major");
-                        learn_scale(&scale)?;
+                        learn_scale(&scale, midi_out_opt)?;
                         enable_raw_mode()?;
                         display_scales_menu()?;
                     }
                     KeyCode::Char('4') if scales_menu => {
                         disable_raw_mode()?;
+                        let midi_out_opt = get_default_midi_output();
                         let scale = get_scale("a_minor");
-                        learn_scale(&scale)?;
+                        learn_scale(&scale, midi_out_opt)?;
                         enable_raw_mode()?;
                         display_scales_menu()?;
                     }
@@ -698,22 +733,25 @@ fn main() -> Result<()> {
                     }
                     KeyCode::Char('1') if chord_menu => {
                         disable_raw_mode()?;
+                        let midi_out_opt = get_default_midi_output();
                         let progression = get_chord_progression("i_iv_v");
-                        learn_chord_progression(&progression)?;
+                        learn_chord_progression(&progression, midi_out_opt)?;
                         enable_raw_mode()?;
                         display_chord_progressions_menu()?;
                     }
                     KeyCode::Char('2') if chord_menu => {
                         disable_raw_mode()?;
+                        let midi_out_opt = get_default_midi_output();
                         let progression = get_chord_progression("ii_v_i");
-                        learn_chord_progression(&progression)?;
+                        learn_chord_progression(&progression, midi_out_opt)?;
                         enable_raw_mode()?;
                         display_chord_progressions_menu()?;
                     }
                     KeyCode::Char('3') if chord_menu => {
                         disable_raw_mode()?;
+                        let midi_out_opt = get_default_midi_output();
                         let progression = get_chord_progression("i_v_vi_iv");
-                        learn_chord_progression(&progression)?;
+                        learn_chord_progression(&progression, midi_out_opt)?;
                         enable_raw_mode()?;
                         display_chord_progressions_menu()?;
                     }
@@ -725,94 +763,37 @@ fn main() -> Result<()> {
                     }
                     KeyCode::Char('1') if mozart_menu => {
                         disable_raw_mode()?;
-                        println!("Select MIDI Output device to play on:");
-                        list_midi_devices()?;
-                        
-                        print!("Enter MIDI output device number: ");
-                        io::stdout().flush()?;
-                        let mut port_input = String::new();
-                        io::stdin().read_line(&mut port_input)?;
-                        
-                        match port_input.trim().parse::<usize>() {
-                            Ok(port_idx) => {
-                                match connect_to_midi_output(port_idx) {
-                                    Ok((midi_out, port)) => {
-                                        play_mozart_piece("Eine Kleine Nachtmusik", midi_out, &port);
-                                    }
-                                    Err(e) => {
-                                        println!("Error connecting to MIDI device: {}", e);
-                                        thread::sleep(Duration::from_secs(2));
-                                    }
-                                }
-                            }
-                            Err(_) => {
-                                println!("Invalid port number");
-                                thread::sleep(Duration::from_secs(2));
-                            }
+                        let midi_out_opt = get_default_midi_output();
+                        if let Some((midi_out, port)) = midi_out_opt {
+                            play_mozart_piece("Eine Kleine Nachtmusik", midi_out, &port);
+                        } else {
+                            println!("No default MIDI device set. Please set one in the main menu.");
+                            thread::sleep(Duration::from_secs(2));
                         }
-                        
                         enable_raw_mode()?;
                         display_mozart_menu()?;
                     }
                     KeyCode::Char('2') if mozart_menu => {
                         disable_raw_mode()?;
-                        println!("Select MIDI Output device to play on:");
-                        list_midi_devices()?;
-                        
-                        print!("Enter MIDI output device number: ");
-                        io::stdout().flush()?;
-                        let mut port_input = String::new();
-                        io::stdin().read_line(&mut port_input)?;
-                        
-                        match port_input.trim().parse::<usize>() {
-                            Ok(port_idx) => {
-                                match connect_to_midi_output(port_idx) {
-                                    Ok((midi_out, port)) => {
-                                        play_mozart_piece("Turkish March", midi_out, &port);
-                                    }
-                                    Err(e) => {
-                                        println!("Error connecting to MIDI device: {}", e);
-                                        thread::sleep(Duration::from_secs(2));
-                                    }
-                                }
-                            }
-                            Err(_) => {
-                                println!("Invalid port number");
-                                thread::sleep(Duration::from_secs(2));
-                            }
+                        let midi_out_opt = get_default_midi_output();
+                        if let Some((midi_out, port)) = midi_out_opt {
+                            play_mozart_piece("Turkish March", midi_out, &port);
+                        } else {
+                            println!("No default MIDI device set. Please set one in the main menu.");
+                            thread::sleep(Duration::from_secs(2));
                         }
-                        
                         enable_raw_mode()?;
                         display_mozart_menu()?;
                     }
                     KeyCode::Char('3') if mozart_menu => {
                         disable_raw_mode()?;
-                        println!("Select MIDI Output device to play on:");
-                        list_midi_devices()?;
-                        
-                        print!("Enter MIDI output device number: ");
-                        io::stdout().flush()?;
-                        let mut port_input = String::new();
-                        io::stdin().read_line(&mut port_input)?;
-                        
-                        match port_input.trim().parse::<usize>() {
-                            Ok(port_idx) => {
-                                match connect_to_midi_output(port_idx) {
-                                    Ok((midi_out, port)) => {
-                                        play_mozart_piece("Symphony No. 40", midi_out, &port);
-                                    }
-                                    Err(e) => {
-                                        println!("Error connecting to MIDI device: {}", e);
-                                        thread::sleep(Duration::from_secs(2));
-                                    }
-                                }
-                            }
-                            Err(_) => {
-                                println!("Invalid port number");
-                                thread::sleep(Duration::from_secs(2));
-                            }
+                        let midi_out_opt = get_default_midi_output();
+                        if let Some((midi_out, port)) = midi_out_opt {
+                            play_mozart_piece("Symphony No. 40", midi_out, &port);
+                        } else {
+                            println!("No default MIDI device set. Please set one in the main menu.");
+                            thread::sleep(Duration::from_secs(2));
                         }
-                        
                         enable_raw_mode()?;
                         display_mozart_menu()?;
                     }
