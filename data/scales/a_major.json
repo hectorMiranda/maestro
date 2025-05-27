@@ -1,0 +1,27 @@
+{
+  "id": "a_major",
+  "name": "A Major",
+  "root": "A",
+  "type": "major",
+  "notes": [
+    69,
+    71,
+    73,
+    74,
+    76,
+    78,
+    80,
+    81
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    5,
+    7,
+    9,
+    11,
+    12
+  ],
+  "description": "The A major scale."
+}
