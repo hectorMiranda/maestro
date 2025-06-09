@@ -1,0 +1,27 @@
+{
+  "id": "ab_locrian",
+  "name": "Ab Locrian",
+  "root": "Ab",
+  "type": "locrian",
+  "notes": [
+    68,
+    69,
+    71,
+    73,
+    74,
+    76,
+    78,
+    80
+  ],
+  "intervals": [
+    0,
+    1,
+    3,
+    5,
+    6,
+    8,
+    10,
+    12
+  ],
+  "description": "The Ab locrian scale."
+}
