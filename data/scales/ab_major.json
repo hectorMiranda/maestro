@@ -1,0 +1,27 @@
+{
+  "id": "ab_major",
+  "name": "Ab Major",
+  "root": "Ab",
+  "type": "major",
+  "notes": [
+    68,
+    70,
+    72,
+    73,
+    75,
+    77,
+    79,
+    80
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    5,
+    7,
+    9,
+    11,
+    12
+  ],
+  "description": "The Ab major scale."
+}
