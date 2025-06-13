@@ -1,0 +1,23 @@
+{
+  "id": "ab_major_pentatonic",
+  "name": "Ab Major Pentatonic",
+  "root": "Ab",
+  "type": "major_pentatonic",
+  "notes": [
+    68,
+    70,
+    72,
+    75,
+    77,
+    80
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    7,
+    9,
+    12
+  ],
+  "description": "The Ab major pentatonic scale."
+}
