@@ -33,3 +33,4 @@ All notable changes to Maestro.
 - note key-signature edge cases in architecture doc
 - polish the interactive menu prompts
 - clarify the data-directory search order
+- add a troubleshooting note for missing ALSA headers
