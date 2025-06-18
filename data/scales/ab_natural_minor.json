@@ -1,0 +1,27 @@
+{
+  "id": "ab_natural_minor",
+  "name": "Ab Natural Minor",
+  "root": "Ab",
+  "type": "natural_minor",
+  "notes": [
+    68,
+    70,
+    71,
+    73,
+    75,
+    76,
+    78,
+    80
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    8,
+    10,
+    12
+  ],
+  "description": "The Ab natural minor scale."
+}
