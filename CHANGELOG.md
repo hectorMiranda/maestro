@@ -52,3 +52,4 @@ All notable changes to Maestro.
 - record a TODO for random password salts
 - note the MIDI import tempo assumption
 - small wording fixes in the contributing guide
+- tidy scale display column alignment
