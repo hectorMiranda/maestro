@@ -1,0 +1,25 @@
+{
+  "id": "c_blues",
+  "name": "C Blues",
+  "root": "C",
+  "type": "blues",
+  "notes": [
+    60,
+    63,
+    65,
+    66,
+    67,
+    70,
+    72
+  ],
+  "intervals": [
+    0,
+    3,
+    5,
+    6,
+    7,
+    10,
+    12
+  ],
+  "description": "The C blues scale."
+}
