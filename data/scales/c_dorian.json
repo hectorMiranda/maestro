@@ -1,0 +1,27 @@
+{
+  "id": "c_dorian",
+  "name": "C Dorian",
+  "root": "C",
+  "type": "dorian",
+  "notes": [
+    60,
+    62,
+    63,
+    65,
+    67,
+    69,
+    70,
+    72
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    9,
+    10,
+    12
+  ],
+  "description": "The C dorian scale."
+}
