@@ -62,3 +62,4 @@ All notable changes to Maestro.
 - tweak etude note durations for evenness
 - cross-link the CLI reference from the README
 - record a TODO for random password salts
+- note the MIDI import tempo assumption
