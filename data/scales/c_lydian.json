@@ -1,0 +1,27 @@
+{
+  "id": "c_lydian",
+  "name": "C Lydian",
+  "root": "C",
+  "type": "lydian",
+  "notes": [
+    60,
+    62,
+    64,
+    66,
+    67,
+    69,
+    71,
+    72
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    6,
+    7,
+    9,
+    11,
+    12
+  ],
+  "description": "The C lydian scale."
+}
