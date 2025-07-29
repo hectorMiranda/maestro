@@ -1,0 +1,23 @@
+{
+  "id": "c_major_pentatonic",
+  "name": "C Major Pentatonic",
+  "root": "C",
+  "type": "major_pentatonic",
+  "notes": [
+    60,
+    62,
+    64,
+    67,
+    69,
+    72
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    7,
+    9,
+    12
+  ],
+  "description": "The C major pentatonic scale."
+}
