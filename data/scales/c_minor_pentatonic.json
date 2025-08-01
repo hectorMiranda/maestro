@@ -1,0 +1,23 @@
+{
+  "id": "c_minor_pentatonic",
+  "name": "C Minor Pentatonic",
+  "root": "C",
+  "type": "minor_pentatonic",
+  "notes": [
+    60,
+    63,
+    65,
+    67,
+    70,
+    72
+  ],
+  "intervals": [
+    0,
+    3,
+    5,
+    7,
+    10,
+    12
+  ],
+  "description": "The C minor pentatonic scale."
+}
