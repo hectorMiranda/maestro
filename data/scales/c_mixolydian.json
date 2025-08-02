@@ -1,0 +1,27 @@
+{
+  "id": "c_mixolydian",
+  "name": "C Mixolydian",
+  "root": "C",
+  "type": "mixolydian",
+  "notes": [
+    60,
+    62,
+    64,
+    65,
+    67,
+    69,
+    70,
+    72
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    5,
+    7,
+    9,
+    10,
+    12
+  ],
+  "description": "The C mixolydian scale."
+}
