@@ -1,0 +1,27 @@
+{
+  "id": "c_natural_minor",
+  "name": "C Natural Minor",
+  "root": "C",
+  "type": "natural_minor",
+  "notes": [
+    60,
+    62,
+    63,
+    65,
+    67,
+    68,
+    70,
+    72
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    8,
+    10,
+    12
+  ],
+  "description": "The C natural minor scale."
+}
