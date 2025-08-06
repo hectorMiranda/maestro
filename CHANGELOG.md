@@ -72,3 +72,4 @@ All notable changes to Maestro.
 - add a troubleshooting note for missing ALSA headers
 - document the per-user progress file layout
 - tweak etude note durations for evenness
+- cross-link the CLI reference from the README
