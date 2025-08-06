@@ -1,0 +1,27 @@
+{
+  "id": "d_dorian",
+  "name": "D Dorian",
+  "root": "D",
+  "type": "dorian",
+  "notes": [
+    62,
+    64,
+    65,
+    67,
+    69,
+    71,
+    72,
+    74
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    9,
+    10,
+    12
+  ],
+  "description": "The D dorian scale."
+}
