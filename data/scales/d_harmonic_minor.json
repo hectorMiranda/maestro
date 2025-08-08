@@ -1,0 +1,27 @@
+{
+  "id": "d_harmonic_minor",
+  "name": "D Harmonic Minor",
+  "root": "D",
+  "type": "harmonic_minor",
+  "notes": [
+    62,
+    64,
+    65,
+    67,
+    69,
+    70,
+    73,
+    74
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    8,
+    11,
+    12
+  ],
+  "description": "The D harmonic minor scale."
+}
