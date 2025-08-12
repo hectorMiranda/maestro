@@ -1,0 +1,27 @@
+{
+  "id": "d_major",
+  "name": "D Major",
+  "root": "D",
+  "type": "major",
+  "notes": [
+    62,
+    64,
+    66,
+    67,
+    69,
+    71,
+    73,
+    74
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    5,
+    7,
+    9,
+    11,
+    12
+  ],
+  "description": "The D major scale."
+}
