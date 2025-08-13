@@ -1,0 +1,23 @@
+{
+  "id": "d_major_pentatonic",
+  "name": "D Major Pentatonic",
+  "root": "D",
+  "type": "major_pentatonic",
+  "notes": [
+    62,
+    64,
+    66,
+    69,
+    71,
+    74
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    7,
+    9,
+    12
+  ],
+  "description": "The D major pentatonic scale."
+}
