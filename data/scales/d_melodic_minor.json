@@ -1,0 +1,27 @@
+{
+  "id": "d_melodic_minor",
+  "name": "D Melodic Minor",
+  "root": "D",
+  "type": "melodic_minor",
+  "notes": [
+    62,
+    64,
+    65,
+    67,
+    69,
+    71,
+    73,
+    74
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    9,
+    11,
+    12
+  ],
+  "description": "The D melodic minor scale."
+}
