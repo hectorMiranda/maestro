@@ -1,0 +1,23 @@
+{
+  "id": "d_minor_pentatonic",
+  "name": "D Minor Pentatonic",
+  "root": "D",
+  "type": "minor_pentatonic",
+  "notes": [
+    62,
+    65,
+    67,
+    69,
+    72,
+    74
+  ],
+  "intervals": [
+    0,
+    3,
+    5,
+    7,
+    10,
+    12
+  ],
+  "description": "The D minor pentatonic scale."
+}
