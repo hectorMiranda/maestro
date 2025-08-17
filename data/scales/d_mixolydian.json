@@ -1,0 +1,27 @@
+{
+  "id": "d_mixolydian",
+  "name": "D Mixolydian",
+  "root": "D",
+  "type": "mixolydian",
+  "notes": [
+    62,
+    64,
+    66,
+    67,
+    69,
+    71,
+    72,
+    74
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    5,
+    7,
+    9,
+    10,
+    12
+  ],
+  "description": "The D mixolydian scale."
+}
