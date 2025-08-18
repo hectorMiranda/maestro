@@ -1,0 +1,27 @@
+{
+  "id": "d_natural_minor",
+  "name": "D Natural Minor",
+  "root": "D",
+  "type": "natural_minor",
+  "notes": [
+    62,
+    64,
+    65,
+    67,
+    69,
+    70,
+    72,
+    74
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    8,
+    10,
+    12
+  ],
+  "description": "The D natural minor scale."
+}
