@@ -1,0 +1,27 @@
+{
+  "id": "db_lydian",
+  "name": "Db Lydian",
+  "root": "Db",
+  "type": "lydian",
+  "notes": [
+    61,
+    63,
+    65,
+    67,
+    68,
+    70,
+    72,
+    73
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    6,
+    7,
+    9,
+    11,
+    12
+  ],
+  "description": "The Db lydian scale."
+}
