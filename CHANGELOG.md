@@ -89,3 +89,4 @@ All notable changes to Maestro.
 - note the MIDI import tempo assumption
 - small wording fixes in the contributing guide
 - tidy scale display column alignment
+- expand README usage examples
