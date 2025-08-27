@@ -1,0 +1,27 @@
+{
+  "id": "db_major",
+  "name": "Db Major",
+  "root": "Db",
+  "type": "major",
+  "notes": [
+    61,
+    63,
+    65,
+    66,
+    68,
+    70,
+    72,
+    73
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    5,
+    7,
+    9,
+    11,
+    12
+  ],
+  "description": "The Db major scale."
+}
