@@ -1,0 +1,27 @@
+{
+  "id": "db_melodic_minor",
+  "name": "Db Melodic Minor",
+  "root": "Db",
+  "type": "melodic_minor",
+  "notes": [
+    61,
+    63,
+    64,
+    66,
+    68,
+    70,
+    72,
+    73
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    9,
+    11,
+    12
+  ],
+  "description": "The Db melodic minor scale."
+}
