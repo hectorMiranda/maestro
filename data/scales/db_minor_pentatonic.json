@@ -1,0 +1,23 @@
+{
+  "id": "db_minor_pentatonic",
+  "name": "Db Minor Pentatonic",
+  "root": "Db",
+  "type": "minor_pentatonic",
+  "notes": [
+    61,
+    64,
+    66,
+    68,
+    71,
+    73
+  ],
+  "intervals": [
+    0,
+    3,
+    5,
+    7,
+    10,
+    12
+  ],
+  "description": "The Db minor pentatonic scale."
+}
