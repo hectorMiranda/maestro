@@ -1,0 +1,27 @@
+{
+  "id": "eb_dorian",
+  "name": "Eb Dorian",
+  "root": "Eb",
+  "type": "dorian",
+  "notes": [
+    63,
+    65,
+    66,
+    68,
+    70,
+    72,
+    73,
+    75
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    9,
+    10,
+    12
+  ],
+  "description": "The Eb dorian scale."
+}
