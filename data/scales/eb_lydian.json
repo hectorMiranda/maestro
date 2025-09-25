@@ -1,0 +1,27 @@
+{
+  "id": "eb_lydian",
+  "name": "Eb Lydian",
+  "root": "Eb",
+  "type": "lydian",
+  "notes": [
+    63,
+    65,
+    67,
+    69,
+    70,
+    72,
+    74,
+    75
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    6,
+    7,
+    9,
+    11,
+    12
+  ],
+  "description": "The Eb lydian scale."
+}
