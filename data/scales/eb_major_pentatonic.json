@@ -1,0 +1,23 @@
+{
+  "id": "eb_major_pentatonic",
+  "name": "Eb Major Pentatonic",
+  "root": "Eb",
+  "type": "major_pentatonic",
+  "notes": [
+    63,
+    65,
+    67,
+    70,
+    72,
+    75
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    7,
+    9,
+    12
+  ],
+  "description": "The Eb major pentatonic scale."
+}
