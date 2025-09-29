@@ -1,0 +1,27 @@
+{
+  "id": "eb_melodic_minor",
+  "name": "Eb Melodic Minor",
+  "root": "Eb",
+  "type": "melodic_minor",
+  "notes": [
+    63,
+    65,
+    66,
+    68,
+    70,
+    72,
+    74,
+    75
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    9,
+    11,
+    12
+  ],
+  "description": "The Eb melodic minor scale."
+}
