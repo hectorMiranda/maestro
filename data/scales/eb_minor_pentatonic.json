@@ -1,0 +1,23 @@
+{
+  "id": "eb_minor_pentatonic",
+  "name": "Eb Minor Pentatonic",
+  "root": "Eb",
+  "type": "minor_pentatonic",
+  "notes": [
+    63,
+    66,
+    68,
+    70,
+    73,
+    75
+  ],
+  "intervals": [
+    0,
+    3,
+    5,
+    7,
+    10,
+    12
+  ],
+  "description": "The Eb minor pentatonic scale."
+}
