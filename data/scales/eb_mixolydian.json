@@ -1,0 +1,27 @@
+{
+  "id": "eb_mixolydian",
+  "name": "Eb Mixolydian",
+  "root": "Eb",
+  "type": "mixolydian",
+  "notes": [
+    63,
+    65,
+    67,
+    68,
+    70,
+    72,
+    73,
+    75
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    5,
+    7,
+    9,
+    10,
+    12
+  ],
+  "description": "The Eb mixolydian scale."
+}
