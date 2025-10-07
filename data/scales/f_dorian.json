@@ -1,0 +1,27 @@
+{
+  "id": "f_dorian",
+  "name": "F Dorian",
+  "root": "F",
+  "type": "dorian",
+  "notes": [
+    65,
+    67,
+    68,
+    70,
+    72,
+    74,
+    75,
+    77
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    9,
+    10,
+    12
+  ],
+  "description": "The F dorian scale."
+}
