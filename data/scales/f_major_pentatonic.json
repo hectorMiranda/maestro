@@ -1,0 +1,23 @@
+{
+  "id": "f_major_pentatonic",
+  "name": "F Major Pentatonic",
+  "root": "F",
+  "type": "major_pentatonic",
+  "notes": [
+    65,
+    67,
+    69,
+    72,
+    74,
+    77
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    7,
+    9,
+    12
+  ],
+  "description": "The F major pentatonic scale."
+}
