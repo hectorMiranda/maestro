@@ -1,0 +1,23 @@
+{
+  "id": "f_minor_pentatonic",
+  "name": "F Minor Pentatonic",
+  "root": "F",
+  "type": "minor_pentatonic",
+  "notes": [
+    65,
+    68,
+    70,
+    72,
+    75,
+    77
+  ],
+  "intervals": [
+    0,
+    3,
+    5,
+    7,
+    10,
+    12
+  ],
+  "description": "The F minor pentatonic scale."
+}
