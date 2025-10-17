@@ -1,0 +1,27 @@
+{
+  "id": "f_mixolydian",
+  "name": "F Mixolydian",
+  "root": "F",
+  "type": "mixolydian",
+  "notes": [
+    65,
+    67,
+    69,
+    70,
+    72,
+    74,
+    75,
+    77
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    5,
+    7,
+    9,
+    10,
+    12
+  ],
+  "description": "The F mixolydian scale."
+}
