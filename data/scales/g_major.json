@@ -1,0 +1,27 @@
+{
+  "id": "g_major",
+  "name": "G Major",
+  "root": "G",
+  "type": "major",
+  "notes": [
+    67,
+    69,
+    71,
+    72,
+    74,
+    76,
+    78,
+    79
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    5,
+    7,
+    9,
+    11,
+    12
+  ],
+  "description": "The G major scale."
+}
