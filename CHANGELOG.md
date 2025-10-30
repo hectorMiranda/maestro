@@ -139,3 +139,4 @@ All notable changes to Maestro.
 - tidy scale display column alignment
 - expand README usage examples
 - note key-signature edge cases in architecture doc
+- polish the interactive menu prompts
