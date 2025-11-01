@@ -1,0 +1,27 @@
+{
+  "id": "g_mixolydian",
+  "name": "G Mixolydian",
+  "root": "G",
+  "type": "mixolydian",
+  "notes": [
+    67,
+    69,
+    71,
+    72,
+    74,
+    76,
+    77,
+    79
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    5,
+    7,
+    9,
+    10,
+    12
+  ],
+  "description": "The G mixolydian scale."
+}
