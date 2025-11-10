@@ -1,0 +1,27 @@
+{
+  "id": "gb_lydian",
+  "name": "Gb Lydian",
+  "root": "Gb",
+  "type": "lydian",
+  "notes": [
+    66,
+    68,
+    70,
+    72,
+    73,
+    75,
+    77,
+    78
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    6,
+    7,
+    9,
+    11,
+    12
+  ],
+  "description": "The Gb lydian scale."
+}
