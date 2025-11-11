@@ -1,0 +1,27 @@
+{
+  "id": "gb_major",
+  "name": "Gb Major",
+  "root": "Gb",
+  "type": "major",
+  "notes": [
+    66,
+    68,
+    70,
+    71,
+    73,
+    75,
+    77,
+    78
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    5,
+    7,
+    9,
+    11,
+    12
+  ],
+  "description": "The Gb major scale."
+}
