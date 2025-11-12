@@ -1,0 +1,23 @@
+{
+  "id": "gb_major_pentatonic",
+  "name": "Gb Major Pentatonic",
+  "root": "Gb",
+  "type": "major_pentatonic",
+  "notes": [
+    66,
+    68,
+    70,
+    73,
+    75,
+    78
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    7,
+    9,
+    12
+  ],
+  "description": "The Gb major pentatonic scale."
+}
