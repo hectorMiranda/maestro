@@ -1,0 +1,34 @@
+{
+  "id": "ab_i_vi_iv_v",
+  "name": "Ab I-vi-IV-V",
+  "key": "Ab",
+  "numerals": [
+    "I",
+    "vi",
+    "IV",
+    "V"
+  ],
+  "chords": [
+    [
+      68,
+      72,
+      75
+    ],
+    [
+      77,
+      80,
+      84
+    ],
+    [
+      73,
+      77,
+      80
+    ],
+    [
+      75,
+      79,
+      82
+    ]
+  ],
+  "description": "The I-vi-IV-V progression in Ab."
+}
