@@ -171,3 +171,4 @@ All notable changes to Maestro.
 - cross-link the CLI reference from the README
 - record a TODO for random password salts
 - note the MIDI import tempo assumption
+- small wording fixes in the contributing guide
