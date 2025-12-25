@@ -1,0 +1,28 @@
+{
+  "id": "d_i_iv_v",
+  "name": "D I-IV-V",
+  "key": "D",
+  "numerals": [
+    "I",
+    "IV",
+    "V"
+  ],
+  "chords": [
+    [
+      62,
+      66,
+      69
+    ],
+    [
+      67,
+      71,
+      74
+    ],
+    [
+      69,
+      73,
+      76
+    ]
+  ],
+  "description": "The I-IV-V progression in D."
+}
