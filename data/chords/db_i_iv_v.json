@@ -1,0 +1,28 @@
+{
+  "id": "db_i_iv_v",
+  "name": "Db I-IV-V",
+  "key": "Db",
+  "numerals": [
+    "I",
+    "IV",
+    "V"
+  ],
+  "chords": [
+    [
+      61,
+      65,
+      68
+    ],
+    [
+      66,
+      70,
+      73
+    ],
+    [
+      68,
+      72,
+      75
+    ]
+  ],
+  "description": "The I-IV-V progression in Db."
+}
