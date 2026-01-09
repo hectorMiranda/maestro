@@ -1,0 +1,34 @@
+{
+  "id": "e_i_v_vi_iv",
+  "name": "E I-V-vi-IV",
+  "key": "E",
+  "numerals": [
+    "I",
+    "V",
+    "vi",
+    "IV"
+  ],
+  "chords": [
+    [
+      64,
+      68,
+      71
+    ],
+    [
+      71,
+      75,
+      78
+    ],
+    [
+      73,
+      76,
+      80
+    ],
+    [
+      69,
+      73,
+      76
+    ]
+  ],
+  "description": "The I-V-vi-IV progression in E."
+}
