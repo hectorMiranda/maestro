@@ -1,0 +1,28 @@
+{
+  "id": "e_ii_v_i",
+  "name": "E ii-V-I",
+  "key": "E",
+  "numerals": [
+    "ii",
+    "V",
+    "I"
+  ],
+  "chords": [
+    [
+      66,
+      69,
+      73
+    ],
+    [
+      71,
+      75,
+      78
+    ],
+    [
+      64,
+      68,
+      71
+    ]
+  ],
+  "description": "The ii-V-I progression in E."
+}
