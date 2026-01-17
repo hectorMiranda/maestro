@@ -1,0 +1,28 @@
+{
+  "id": "eb_ii_v_i",
+  "name": "Eb ii-V-I",
+  "key": "Eb",
+  "numerals": [
+    "ii",
+    "V",
+    "I"
+  ],
+  "chords": [
+    [
+      65,
+      68,
+      72
+    ],
+    [
+      70,
+      74,
+      77
+    ],
+    [
+      63,
+      67,
+      70
+    ]
+  ],
+  "description": "The ii-V-I progression in Eb."
+}
