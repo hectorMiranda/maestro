@@ -1,0 +1,34 @@
+{
+  "id": "eb_vi_iv_i_v",
+  "name": "Eb vi-IV-I-V",
+  "key": "Eb",
+  "numerals": [
+    "vi",
+    "IV",
+    "I",
+    "V"
+  ],
+  "chords": [
+    [
+      72,
+      75,
+      79
+    ],
+    [
+      68,
+      72,
+      75
+    ],
+    [
+      63,
+      67,
+      70
+    ],
+    [
+      70,
+      74,
+      77
+    ]
+  ],
+  "description": "The vi-IV-I-V progression in Eb."
+}
