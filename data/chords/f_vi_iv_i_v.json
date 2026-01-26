@@ -1,0 +1,34 @@
+{
+  "id": "f_vi_iv_i_v",
+  "name": "F vi-IV-I-V",
+  "key": "F",
+  "numerals": [
+    "vi",
+    "IV",
+    "I",
+    "V"
+  ],
+  "chords": [
+    [
+      74,
+      77,
+      81
+    ],
+    [
+      70,
+      74,
+      77
+    ],
+    [
+      65,
+      69,
+      72
+    ],
+    [
+      72,
+      76,
+      79
+    ]
+  ],
+  "description": "The vi-IV-I-V progression in F."
+}
