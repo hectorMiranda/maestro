@@ -1,0 +1,34 @@
+{
+  "id": "gb_i_iv_vi_v",
+  "name": "Gb I-IV-vi-V",
+  "key": "Gb",
+  "numerals": [
+    "I",
+    "IV",
+    "vi",
+    "V"
+  ],
+  "chords": [
+    [
+      66,
+      70,
+      73
+    ],
+    [
+      71,
+      75,
+      78
+    ],
+    [
+      75,
+      78,
+      82
+    ],
+    [
+      73,
+      77,
+      80
+    ]
+  ],
+  "description": "The I-IV-vi-V progression in Gb."
+}
