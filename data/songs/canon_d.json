@@ -1,0 +1,49 @@
+{
+  "id": "canon_d",
+  "name": "Canon in D (theme)",
+  "composer": "Pachelbel",
+  "tempo": 100,
+  "description": "Canon in D (theme) — built-in piece.",
+  "notes": [
+    [
+      66,
+      72,
+      500
+    ],
+    [
+      62,
+      72,
+      500
+    ],
+    [
+      64,
+      72,
+      500
+    ],
+    [
+      66,
+      72,
+      500
+    ],
+    [
+      67,
+      72,
+      500
+    ],
+    [
+      62,
+      72,
+      500
+    ],
+    [
+      64,
+      72,
+      500
+    ],
+    [
+      66,
+      72,
+      500
+    ]
+  ]
+}
