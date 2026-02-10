@@ -1,0 +1,49 @@
+{
+  "id": "eine_kleine",
+  "name": "Eine Kleine Nachtmusik",
+  "composer": "Mozart",
+  "tempo": 130,
+  "description": "Eine Kleine Nachtmusik — built-in piece.",
+  "notes": [
+    [
+      67,
+      64,
+      400
+    ],
+    [
+      67,
+      64,
+      400
+    ],
+    [
+      67,
+      64,
+      400
+    ],
+    [
+      63,
+      64,
+      1200
+    ],
+    [
+      65,
+      64,
+      400
+    ],
+    [
+      65,
+      64,
+      400
+    ],
+    [
+      65,
+      64,
+      400
+    ],
+    [
+      62,
+      64,
+      1200
+    ]
+  ]
+}
