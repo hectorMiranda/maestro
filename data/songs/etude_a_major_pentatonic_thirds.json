@@ -1,0 +1,49 @@
+{
+  "id": "etude_a_major_pentatonic_thirds",
+  "name": "A Major Pentatonic — Thirds Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Thirds practice etude over the A major pentatonic scale.",
+  "notes": [
+    [
+      69,
+      64,
+      360
+    ],
+    [
+      73,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      76,
+      64,
+      360
+    ],
+    [
+      73,
+      64,
+      360
+    ],
+    [
+      78,
+      64,
+      360
+    ],
+    [
+      76,
+      64,
+      360
+    ],
+    [
+      81,
+      64,
+      360
+    ]
+  ]
+}
