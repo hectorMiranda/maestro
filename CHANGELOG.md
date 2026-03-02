@@ -236,3 +236,4 @@ All notable changes to Maestro.
 - expand README usage examples
 - note key-signature edge cases in architecture doc
 - polish the interactive menu prompts
+- clarify the data-directory search order
