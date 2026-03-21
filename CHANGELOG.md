@@ -251,3 +251,4 @@ All notable changes to Maestro.
 - clarify the data-directory search order
 - add a troubleshooting note for missing ALSA headers
 - document the per-user progress file layout
+- tweak etude note durations for evenness
