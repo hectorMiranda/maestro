@@ -1,0 +1,34 @@
+{
+  "id": "etude_bb_dorian_arpeggio",
+  "name": "Bb Dorian — Arpeggio Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Arpeggio practice etude over the Bb dorian scale.",
+  "notes": [
+    [
+      70,
+      64,
+      360
+    ],
+    [
+      73,
+      64,
+      360
+    ],
+    [
+      77,
+      64,
+      360
+    ],
+    [
+      73,
+      64,
+      360
+    ],
+    [
+      70,
+      64,
+      360
+    ]
+  ]
+}
