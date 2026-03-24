@@ -1,0 +1,69 @@
+{
+  "id": "etude_bb_dorian_thirds",
+  "name": "Bb Dorian — Thirds Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Thirds practice etude over the Bb dorian scale.",
+  "notes": [
+    [
+      70,
+      64,
+      360
+    ],
+    [
+      73,
+      64,
+      360
+    ],
+    [
+      72,
+      64,
+      360
+    ],
+    [
+      75,
+      64,
+      360
+    ],
+    [
+      73,
+      64,
+      360
+    ],
+    [
+      77,
+      64,
+      360
+    ],
+    [
+      75,
+      64,
+      360
+    ],
+    [
+      79,
+      64,
+      360
+    ],
+    [
+      77,
+      64,
+      360
+    ],
+    [
+      80,
+      64,
+      360
+    ],
+    [
+      79,
+      64,
+      360
+    ],
+    [
+      82,
+      64,
+      360
+    ]
+  ]
+}
