@@ -1,0 +1,49 @@
+{
+  "id": "etude_bb_dorian_descending",
+  "name": "Bb Dorian — Descending Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Descending practice etude over the Bb dorian scale.",
+  "notes": [
+    [
+      82,
+      64,
+      360
+    ],
+    [
+      80,
+      64,
+      360
+    ],
+    [
+      79,
+      64,
+      360
+    ],
+    [
+      77,
+      64,
+      360
+    ],
+    [
+      75,
+      64,
+      360
+    ],
+    [
+      73,
+      64,
+      360
+    ],
+    [
+      72,
+      64,
+      360
+    ],
+    [
+      70,
+      64,
+      360
+    ]
+  ]
+}
