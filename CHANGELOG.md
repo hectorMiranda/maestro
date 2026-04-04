@@ -262,3 +262,4 @@ All notable changes to Maestro.
 - polish the interactive menu prompts
 - clarify the data-directory search order
 - add a troubleshooting note for missing ALSA headers
+- document the per-user progress file layout
