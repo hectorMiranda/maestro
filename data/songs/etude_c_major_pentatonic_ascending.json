@@ -1,0 +1,39 @@
+{
+  "id": "etude_c_major_pentatonic_ascending",
+  "name": "C Major Pentatonic — Ascending Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Ascending practice etude over the C major pentatonic scale.",
+  "notes": [
+    [
+      60,
+      64,
+      360
+    ],
+    [
+      62,
+      64,
+      360
+    ],
+    [
+      64,
+      64,
+      360
+    ],
+    [
+      67,
+      64,
+      360
+    ],
+    [
+      69,
+      64,
+      360
+    ],
+    [
+      72,
+      64,
+      360
+    ]
+  ]
+}
