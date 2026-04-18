@@ -1,0 +1,49 @@
+{
+  "id": "etude_d_dorian_descending",
+  "name": "D Dorian — Descending Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Descending practice etude over the D dorian scale.",
+  "notes": [
+    [
+      74,
+      64,
+      360
+    ],
+    [
+      72,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      69,
+      64,
+      360
+    ],
+    [
+      67,
+      64,
+      360
+    ],
+    [
+      65,
+      64,
+      360
+    ],
+    [
+      64,
+      64,
+      360
+    ],
+    [
+      62,
+      64,
+      360
+    ]
+  ]
+}
