@@ -1,0 +1,49 @@
+{
+  "id": "etude_d_major_descending",
+  "name": "D Major — Descending Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Descending practice etude over the D major scale.",
+  "notes": [
+    [
+      74,
+      64,
+      360
+    ],
+    [
+      73,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      69,
+      64,
+      360
+    ],
+    [
+      67,
+      64,
+      360
+    ],
+    [
+      66,
+      64,
+      360
+    ],
+    [
+      64,
+      64,
+      360
+    ],
+    [
+      62,
+      64,
+      360
+    ]
+  ]
+}
