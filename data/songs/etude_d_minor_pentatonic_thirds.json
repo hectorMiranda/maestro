@@ -1,0 +1,49 @@
+{
+  "id": "etude_d_minor_pentatonic_thirds",
+  "name": "D Minor Pentatonic — Thirds Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Thirds practice etude over the D minor pentatonic scale.",
+  "notes": [
+    [
+      62,
+      64,
+      360
+    ],
+    [
+      67,
+      64,
+      360
+    ],
+    [
+      65,
+      64,
+      360
+    ],
+    [
+      69,
+      64,
+      360
+    ],
+    [
+      67,
+      64,
+      360
+    ],
+    [
+      72,
+      64,
+      360
+    ],
+    [
+      69,
+      64,
+      360
+    ],
+    [
+      74,
+      64,
+      360
+    ]
+  ]
+}
