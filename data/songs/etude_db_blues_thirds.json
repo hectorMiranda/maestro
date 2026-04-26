@@ -1,0 +1,59 @@
+{
+  "id": "etude_db_blues_thirds",
+  "name": "Db Blues — Thirds Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Thirds practice etude over the Db blues scale.",
+  "notes": [
+    [
+      61,
+      64,
+      360
+    ],
+    [
+      66,
+      64,
+      360
+    ],
+    [
+      64,
+      64,
+      360
+    ],
+    [
+      67,
+      64,
+      360
+    ],
+    [
+      66,
+      64,
+      360
+    ],
+    [
+      68,
+      64,
+      360
+    ],
+    [
+      67,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      68,
+      64,
+      360
+    ],
+    [
+      73,
+      64,
+      360
+    ]
+  ]
+}
