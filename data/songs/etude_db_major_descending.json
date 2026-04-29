@@ -1,0 +1,49 @@
+{
+  "id": "etude_db_major_descending",
+  "name": "Db Major — Descending Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Descending practice etude over the Db major scale.",
+  "notes": [
+    [
+      73,
+      64,
+      360
+    ],
+    [
+      72,
+      64,
+      360
+    ],
+    [
+      70,
+      64,
+      360
+    ],
+    [
+      68,
+      64,
+      360
+    ],
+    [
+      66,
+      64,
+      360
+    ],
+    [
+      65,
+      64,
+      360
+    ],
+    [
+      63,
+      64,
+      360
+    ],
+    [
+      61,
+      64,
+      360
+    ]
+  ]
+}
