@@ -1,0 +1,39 @@
+{
+  "id": "etude_db_major_pentatonic_descending",
+  "name": "Db Major Pentatonic — Descending Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Descending practice etude over the Db major pentatonic scale.",
+  "notes": [
+    [
+      73,
+      64,
+      360
+    ],
+    [
+      70,
+      64,
+      360
+    ],
+    [
+      68,
+      64,
+      360
+    ],
+    [
+      65,
+      64,
+      360
+    ],
+    [
+      63,
+      64,
+      360
+    ],
+    [
+      61,
+      64,
+      360
+    ]
+  ]
+}
