@@ -1,0 +1,49 @@
+{
+  "id": "etude_e_natural_minor_descending",
+  "name": "E Natural Minor — Descending Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Descending practice etude over the E natural minor scale.",
+  "notes": [
+    [
+      76,
+      64,
+      360
+    ],
+    [
+      74,
+      64,
+      360
+    ],
+    [
+      72,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      69,
+      64,
+      360
+    ],
+    [
+      67,
+      64,
+      360
+    ],
+    [
+      66,
+      64,
+      360
+    ],
+    [
+      64,
+      64,
+      360
+    ]
+  ]
+}
