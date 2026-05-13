@@ -1,0 +1,69 @@
+{
+  "id": "etude_e_natural_minor_thirds",
+  "name": "E Natural Minor — Thirds Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Thirds practice etude over the E natural minor scale.",
+  "notes": [
+    [
+      64,
+      64,
+      360
+    ],
+    [
+      67,
+      64,
+      360
+    ],
+    [
+      66,
+      64,
+      360
+    ],
+    [
+      69,
+      64,
+      360
+    ],
+    [
+      67,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      69,
+      64,
+      360
+    ],
+    [
+      72,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      74,
+      64,
+      360
+    ],
+    [
+      72,
+      64,
+      360
+    ],
+    [
+      76,
+      64,
+      360
+    ]
+  ]
+}
