@@ -1,0 +1,39 @@
+{
+  "id": "etude_eb_minor_pentatonic_ascending",
+  "name": "Eb Minor Pentatonic — Ascending Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Ascending practice etude over the Eb minor pentatonic scale.",
+  "notes": [
+    [
+      63,
+      64,
+      360
+    ],
+    [
+      66,
+      64,
+      360
+    ],
+    [
+      68,
+      64,
+      360
+    ],
+    [
+      70,
+      64,
+      360
+    ],
+    [
+      73,
+      64,
+      360
+    ],
+    [
+      75,
+      64,
+      360
+    ]
+  ]
+}
