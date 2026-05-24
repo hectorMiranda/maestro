@@ -1,0 +1,44 @@
+{
+  "id": "etude_f_blues_ascending",
+  "name": "F Blues — Ascending Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Ascending practice etude over the F blues scale.",
+  "notes": [
+    [
+      65,
+      64,
+      360
+    ],
+    [
+      68,
+      64,
+      360
+    ],
+    [
+      70,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      72,
+      64,
+      360
+    ],
+    [
+      75,
+      64,
+      360
+    ],
+    [
+      77,
+      64,
+      360
+    ]
+  ]
+}
