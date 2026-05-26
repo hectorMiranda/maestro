@@ -1,0 +1,49 @@
+{
+  "id": "etude_f_dorian_ascending",
+  "name": "F Dorian — Ascending Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Ascending practice etude over the F dorian scale.",
+  "notes": [
+    [
+      65,
+      64,
+      360
+    ],
+    [
+      67,
+      64,
+      360
+    ],
+    [
+      68,
+      64,
+      360
+    ],
+    [
+      70,
+      64,
+      360
+    ],
+    [
+      72,
+      64,
+      360
+    ],
+    [
+      74,
+      64,
+      360
+    ],
+    [
+      75,
+      64,
+      360
+    ],
+    [
+      77,
+      64,
+      360
+    ]
+  ]
+}
