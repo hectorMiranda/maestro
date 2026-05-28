@@ -1,0 +1,39 @@
+{
+  "id": "etude_f_major_pentatonic_ascending",
+  "name": "F Major Pentatonic — Ascending Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Ascending practice etude over the F major pentatonic scale.",
+  "notes": [
+    [
+      65,
+      64,
+      360
+    ],
+    [
+      67,
+      64,
+      360
+    ],
+    [
+      69,
+      64,
+      360
+    ],
+    [
+      72,
+      64,
+      360
+    ],
+    [
+      74,
+      64,
+      360
+    ],
+    [
+      77,
+      64,
+      360
+    ]
+  ]
+}
