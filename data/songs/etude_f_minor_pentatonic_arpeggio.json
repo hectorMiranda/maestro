@@ -1,0 +1,34 @@
+{
+  "id": "etude_f_minor_pentatonic_arpeggio",
+  "name": "F Minor Pentatonic — Arpeggio Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Arpeggio practice etude over the F minor pentatonic scale.",
+  "notes": [
+    [
+      65,
+      64,
+      360
+    ],
+    [
+      70,
+      64,
+      360
+    ],
+    [
+      75,
+      64,
+      360
+    ],
+    [
+      70,
+      64,
+      360
+    ],
+    [
+      65,
+      64,
+      360
+    ]
+  ]
+}
