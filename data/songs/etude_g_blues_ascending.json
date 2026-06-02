@@ -1,0 +1,44 @@
+{
+  "id": "etude_g_blues_ascending",
+  "name": "G Blues — Ascending Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Ascending practice etude over the G blues scale.",
+  "notes": [
+    [
+      67,
+      64,
+      360
+    ],
+    [
+      70,
+      64,
+      360
+    ],
+    [
+      72,
+      64,
+      360
+    ],
+    [
+      73,
+      64,
+      360
+    ],
+    [
+      74,
+      64,
+      360
+    ],
+    [
+      77,
+      64,
+      360
+    ],
+    [
+      79,
+      64,
+      360
+    ]
+  ]
+}
