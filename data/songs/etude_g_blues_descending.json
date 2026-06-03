@@ -1,0 +1,44 @@
+{
+  "id": "etude_g_blues_descending",
+  "name": "G Blues — Descending Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Descending practice etude over the G blues scale.",
+  "notes": [
+    [
+      79,
+      64,
+      360
+    ],
+    [
+      77,
+      64,
+      360
+    ],
+    [
+      74,
+      64,
+      360
+    ],
+    [
+      73,
+      64,
+      360
+    ],
+    [
+      72,
+      64,
+      360
+    ],
+    [
+      70,
+      64,
+      360
+    ],
+    [
+      67,
+      64,
+      360
+    ]
+  ]
+}
