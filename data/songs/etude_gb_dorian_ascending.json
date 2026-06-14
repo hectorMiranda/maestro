@@ -1,0 +1,49 @@
+{
+  "id": "etude_gb_dorian_ascending",
+  "name": "Gb Dorian — Ascending Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Ascending practice etude over the Gb dorian scale.",
+  "notes": [
+    [
+      66,
+      64,
+      360
+    ],
+    [
+      68,
+      64,
+      360
+    ],
+    [
+      69,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      73,
+      64,
+      360
+    ],
+    [
+      75,
+      64,
+      360
+    ],
+    [
+      76,
+      64,
+      360
+    ],
+    [
+      78,
+      64,
+      360
+    ]
+  ]
+}
