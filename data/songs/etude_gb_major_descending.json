@@ -1,0 +1,49 @@
+{
+  "id": "etude_gb_major_descending",
+  "name": "Gb Major — Descending Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Descending practice etude over the Gb major scale.",
+  "notes": [
+    [
+      78,
+      64,
+      360
+    ],
+    [
+      77,
+      64,
+      360
+    ],
+    [
+      75,
+      64,
+      360
+    ],
+    [
+      73,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      70,
+      64,
+      360
+    ],
+    [
+      68,
+      64,
+      360
+    ],
+    [
+      66,
+      64,
+      360
+    ]
+  ]
+}
