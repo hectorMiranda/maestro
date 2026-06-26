@@ -65,7 +65,7 @@ pub fn run() -> Result<()> {
         );
         match prompt("Choice: ")?.as_str() {
             "1" => scales_menu(device)?,
-            "2" => chords_menu()?,
+            "2" => chords_menu(device)?,
             "3" => songs_menu(device)?,
             "4" => devices_menu()?,
             "q" | "Q" => break,
@@ -76,37 +76,79 @@ pub fn run() -> Result<()> {
     Ok(())
 }
 
+const SHOWN: usize = 24;
+
+/// Resolve a user's pick: a 1-based number from the shown list, an exact id,
+/// or a case-insensitive substring of an id.
+fn choose<'a, T>(items: &'a [T], input: &str, id: impl Fn(&T) -> &str) -> Option<&'a T> {
+    let input = input.trim();
+    if let Ok(n) = input.parse::<usize>() {
+        if n >= 1 && n <= items.len().min(SHOWN) {
+            return items.get(n - 1);
+        }
+    }
+    let lower = input.to_lowercase();
+    items
+        .iter()
+        .find(|t| id(t) == input)
+        .or_else(|| items.iter().find(|t| id(t).to_lowercase().contains(&lower)))
+}
+
+fn list_hint(total: usize) {
+    if total > SHOWN {
+        println!(
+            "  … and {} more — type an id (e.g. from the list) to pick any.",
+            total - SHOWN
+        );
+    }
+}
+
 fn scales_menu(device: Option<usize>) -> Result<()> {
     let scales = data::load_scales()?;
     println!("\n{} scales available.", scales.len());
-    for (i, s) in scales.iter().take(24).enumerate() {
+    for (i, s) in scales.iter().take(SHOWN).enumerate() {
         println!("  {:>3}. {} [{}]", i + 1, s.name, s.id);
     }
-    let pick = prompt("Scale id (or blank to go back): ")?;
-    if let Some(s) = scales.iter().find(|s| s.id == pick) {
-        music::display_scale(s);
-        let song = crate::model::Song {
-            id: s.id.clone(),
-            name: s.name.clone(),
-            composer: String::new(),
-            tempo: 120,
-            description: String::new(),
-            notes: s.notes.iter().map(|n| (*n, 72u8, 400u32)).collect(),
-        };
-        midi::play_song(&song, device)?;
+    list_hint(scales.len());
+    let pick = prompt("Number or id (blank to go back): ")?;
+    if pick.is_empty() {
+        return Ok(());
+    }
+    match choose(&scales, &pick, |s| &s.id) {
+        Some(s) => {
+            music::display_scale(s);
+            let song = crate::model::Song {
+                id: s.id.clone(),
+                name: s.name.clone(),
+                composer: String::new(),
+                tempo: 120,
+                description: String::new(),
+                notes: s.notes.iter().map(|n| (*n, 72u8, 400u32)).collect(),
+            };
+            midi::play_song(&song, device)?;
+        }
+        None => println!("No scale matches '{pick}'."),
     }
     Ok(())
 }
 
-fn chords_menu() -> Result<()> {
+fn chords_menu(device: Option<usize>) -> Result<()> {
     let chords = data::load_chords()?;
     println!("\n{} chord progressions available.", chords.len());
-    for (i, c) in chords.iter().take(24).enumerate() {
+    for (i, c) in chords.iter().take(SHOWN).enumerate() {
         println!("  {:>3}. {} [{}]", i + 1, c.name, c.id);
     }
-    let pick = prompt("Progression id (or blank to go back): ")?;
-    if let Some(c) = chords.iter().find(|c| c.id == pick) {
-        music::display_chord(c);
+    list_hint(chords.len());
+    let pick = prompt("Number or id (blank to go back): ")?;
+    if pick.is_empty() {
+        return Ok(());
+    }
+    match choose(&chords, &pick, |c| &c.id) {
+        Some(c) => {
+            music::display_chord(c);
+            midi::play_chord_progression(c, device)?;
+        }
+        None => println!("No progression matches '{pick}'."),
     }
     Ok(())
 }
@@ -114,12 +156,20 @@ fn chords_menu() -> Result<()> {
 fn songs_menu(device: Option<usize>) -> Result<()> {
     let catalogue = data::load_songs()?;
     println!("\n{} songs available.", catalogue.len());
-    for (i, s) in catalogue.iter().take(24).enumerate() {
+    for (i, s) in catalogue.iter().take(SHOWN).enumerate() {
         println!("  {:>3}. {}", i + 1, songs::summary(s));
     }
-    let pick = prompt("Song id to play (or blank to go back): ")?;
-    if let Some(s) = catalogue.iter().find(|s| s.id == pick) {
-        midi::play_song(s, device)?;
+    list_hint(catalogue.len());
+    let pick = prompt("Number or id (blank to go back): ")?;
+    if pick.is_empty() {
+        return Ok(());
+    }
+    match choose(&catalogue, &pick, |s| &s.id) {
+        Some(s) => {
+            println!("Playing {}", songs::summary(s));
+            midi::play_song(s, device)?;
+        }
+        None => println!("No song matches '{pick}'."),
     }
     Ok(())
 }

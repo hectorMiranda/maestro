@@ -2,6 +2,15 @@
 
 All notable changes to Maestro.
 
+## 0.7.2 — Menu playback fixes
+
+- Menu items can now be picked by **number** (from the shown list) or by id —
+  previously only the exact id worked, so typing "1" did nothing.
+- **Chord progressions now play** from the menu (they only printed before);
+  added `midi::play_chord_progression`.
+- Scales and songs play to the auto-detected device; clearer "no match" output
+  and a hint when the list is truncated.
+
 ## 0.7.1 — Startup polish
 
 - The interactive menu now **auto-detects a connected CASIO** (any output whose
