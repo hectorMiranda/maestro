@@ -38,9 +38,20 @@ pub fn run() -> Result<()> {
         "Welcome to the Maestro Piano Learning Program v{}!",
         crate::VERSION
     );
-    if !midi::live_supported() {
-        println!("(MIDI output disabled — built without the `midi` feature.)");
+
+    // Auto-detect an output device, preferring a connected CASIO, and greet
+    // with a short startup chime.
+    let detected = midi::auto_output("casio");
+    let device = detected.as_ref().map(|(i, _)| *i);
+    match &detected {
+        Some((i, name)) => println!("🎹 Detected MIDI output {i}: {name}"),
+        None if midi::live_supported() => {
+            println!("(No MIDI output device found — connect your keyboard.)")
+        }
+        None => println!("(MIDI output disabled — built without the `midi` feature.)"),
     }
+    let _ = midi::play_chime(device);
+
     loop {
         framed_menu(
             "Maestro",
@@ -53,9 +64,9 @@ pub fn run() -> Result<()> {
             ],
         );
         match prompt("Choice: ")?.as_str() {
-            "1" => scales_menu()?,
+            "1" => scales_menu(device)?,
             "2" => chords_menu()?,
-            "3" => songs_menu()?,
+            "3" => songs_menu(device)?,
             "4" => devices_menu()?,
             "q" | "Q" => break,
             _ => println!("Unknown choice."),
@@ -65,7 +76,7 @@ pub fn run() -> Result<()> {
     Ok(())
 }
 
-fn scales_menu() -> Result<()> {
+fn scales_menu(device: Option<usize>) -> Result<()> {
     let scales = data::load_scales()?;
     println!("\n{} scales available.", scales.len());
     for (i, s) in scales.iter().take(24).enumerate() {
@@ -74,6 +85,15 @@ fn scales_menu() -> Result<()> {
     let pick = prompt("Scale id (or blank to go back): ")?;
     if let Some(s) = scales.iter().find(|s| s.id == pick) {
         music::display_scale(s);
+        let song = crate::model::Song {
+            id: s.id.clone(),
+            name: s.name.clone(),
+            composer: String::new(),
+            tempo: 120,
+            description: String::new(),
+            notes: s.notes.iter().map(|n| (*n, 72u8, 400u32)).collect(),
+        };
+        midi::play_song(&song, device)?;
     }
     Ok(())
 }
@@ -91,7 +111,7 @@ fn chords_menu() -> Result<()> {
     Ok(())
 }
 
-fn songs_menu() -> Result<()> {
+fn songs_menu(device: Option<usize>) -> Result<()> {
     let catalogue = data::load_songs()?;
     println!("\n{} songs available.", catalogue.len());
     for (i, s) in catalogue.iter().take(24).enumerate() {
@@ -99,20 +119,25 @@ fn songs_menu() -> Result<()> {
     }
     let pick = prompt("Song id to play (or blank to go back): ")?;
     if let Some(s) = catalogue.iter().find(|s| s.id == pick) {
-        midi::play_song(s, None)?;
+        midi::play_song(s, device)?;
     }
     Ok(())
 }
 
 fn devices_menu() -> Result<()> {
-    let devices = midi::output_devices()?;
-    if devices.is_empty() {
-        println!("\nNo MIDI output devices (or built without the `midi` feature).");
-    } else {
-        println!("\nMIDI output devices:");
-        for (i, d) in devices.iter().enumerate() {
-            println!("  {i}: {d}");
-        }
+    let outputs = midi::output_devices()?;
+    let inputs = midi::input_devices()?;
+    if outputs.is_empty() && inputs.is_empty() {
+        println!("\nNo MIDI devices (or built without the `midi` feature).");
+        return Ok(());
+    }
+    println!("\nMIDI output devices:");
+    for (i, d) in outputs.iter().enumerate() {
+        println!("  {i}: {d}");
+    }
+    println!("MIDI input devices:");
+    for (i, d) in inputs.iter().enumerate() {
+        println!("  {i}: {d}");
     }
     Ok(())
 }
