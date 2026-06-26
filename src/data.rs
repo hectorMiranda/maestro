@@ -6,7 +6,7 @@
 //! 3. `$CARGO_MANIFEST_DIR/data` (development / tests)
 //! 4. `./data`
 
-use crate::model::{ChordProgression, Scale, Song};
+use crate::model::{ChordProgression, Playlist, Scale, Song};
 use anyhow::{Context, Result};
 use std::path::{Path, PathBuf};
 
@@ -83,4 +83,14 @@ pub fn find_chord(id: &str) -> Result<Option<ChordProgression>> {
 /// Find a song by its id.
 pub fn find_song(id: &str) -> Result<Option<Song>> {
     Ok(load_songs()?.into_iter().find(|s| s.id == id))
+}
+
+/// Load every playlist in the catalogue.
+pub fn load_playlists() -> Result<Vec<Playlist>> {
+    load_dir("playlists")
+}
+
+/// Find a playlist by its id.
+pub fn find_playlist(id: &str) -> Result<Option<Playlist>> {
+    Ok(load_playlists()?.into_iter().find(|p| p.id == id))
 }

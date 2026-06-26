@@ -55,3 +55,43 @@ impl Song {
         self.notes.iter().map(|(_, _, d)| *d).sum()
     }
 }
+
+/// A named, ordered list of song ids — the lightweight, shareable playlist.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct Playlist {
+    pub id: String,
+    pub name: String,
+    #[serde(default)]
+    pub description: String,
+    /// Song ids, in play order.
+    #[serde(default)]
+    pub tracks: Vec<String>,
+}
+
+/// A self-contained playlist bundle: the playlist plus every song it needs, so
+/// it can be shared as a single file and imported anywhere.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PlaylistBundle {
+    /// Format marker for forward-compatibility.
+    #[serde(default = "bundle_format")]
+    pub format: String,
+    pub name: String,
+    #[serde(default)]
+    pub description: String,
+    pub songs: Vec<Song>,
+}
+
+fn bundle_format() -> String {
+    "maestro.playlist.v1".to_string()
+}
+
+impl PlaylistBundle {
+    pub fn new(name: impl Into<String>, description: impl Into<String>, songs: Vec<Song>) -> Self {
+        PlaylistBundle {
+            format: bundle_format(),
+            name: name.into(),
+            description: description.into(),
+            songs,
+        }
+    }
+}
