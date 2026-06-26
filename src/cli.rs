@@ -1,7 +1,10 @@
 //! Command-line interface: argument parsing (clap) and command dispatch.
 
-use crate::{config::Config, data, midi, music, progress::Progress, songs, tui, user::UserStore};
-use anyhow::{bail, Result};
+use crate::{
+    config::Config, data, importer, midi, model::Song, music, progress::Progress, songs, tui,
+    user::UserStore,
+};
+use anyhow::{bail, Context, Result};
 use clap::{Parser, Subcommand};
 use std::io::{self, Write};
 
@@ -60,6 +63,31 @@ pub enum Command {
         #[arg(long)]
         device: Option<usize>,
     },
+    /// Interactively learn a song in wait mode (play the highlighted note to advance).
+    Learn {
+        /// Song id, or a path to a `.txt`/`.mid` file to learn directly.
+        id: String,
+        /// MIDI input device index (your keyboard).
+        #[arg(long)]
+        input: Option<usize>,
+        /// MIDI output device index for ear feedback.
+        #[arg(long)]
+        output: Option<usize>,
+        /// Accept any octave of the right note.
+        #[arg(long)]
+        octave_any: bool,
+    },
+    /// Import a song from a text tab or `.mid` file; print, play or save it.
+    Import {
+        /// Path to a `.txt` (Maestro tab) or `.mid` file.
+        path: String,
+        /// Play the imported song after loading.
+        #[arg(long)]
+        play: bool,
+        /// Save it into the catalogue under this id.
+        #[arg(long, value_name = "ID")]
+        save: Option<String>,
+    },
     /// Register a new local user.
     Register { username: String },
     /// Sign in as a user.
@@ -101,6 +129,13 @@ pub fn run(cli: Cli) -> Result<()> {
         Command::Chord { id } => show_chord(&id),
         Command::Songs { filter } => list_songs(filter.as_deref()),
         Command::Play { id, device } => play(&id, device),
+        Command::Learn {
+            id,
+            input,
+            output,
+            octave_any,
+        } => learn(&id, input, output, octave_any),
+        Command::Import { path, play, save } => import(&path, play, save),
         Command::Register { username } => register(&username),
         Command::Login { username } => login(&username),
         Command::Logout => logout(),
@@ -111,16 +146,22 @@ pub fn run(cli: Cli) -> Result<()> {
 }
 
 fn devices() -> Result<()> {
-    let devices = midi::output_devices()?;
-    if devices.is_empty() {
+    let outputs = midi::output_devices()?;
+    let inputs = midi::input_devices()?;
+    if outputs.is_empty() && inputs.is_empty() {
         println!(
-            "No MIDI output devices available (feature `midi` is {}).",
+            "No MIDI devices available (feature `midi` is {}).",
             if midi::live_supported() { "on" } else { "off" }
         );
-    } else {
-        for (i, name) in devices.iter().enumerate() {
-            println!("{i}: {name}");
-        }
+        return Ok(());
+    }
+    println!("MIDI output devices:");
+    for (i, name) in outputs.iter().enumerate() {
+        println!("  {i}: {name}");
+    }
+    println!("MIDI input devices:");
+    for (i, name) in inputs.iter().enumerate() {
+        println!("  {i}: {name}");
     }
     Ok(())
 }
@@ -208,6 +249,61 @@ fn play(id: &str, device: Option<usize>) -> Result<()> {
         }
         None => bail!("no song with id '{id}'"),
     }
+}
+
+/// Load a song from a `.txt` (Maestro tab) or `.mid` file.
+fn load_song_file(path: &str) -> Result<Song> {
+    let lower = path.to_lowercase();
+    if lower.ends_with(".mid") || lower.ends_with(".midi") {
+        midi::load_midi_file(path)
+    } else {
+        let text = std::fs::read_to_string(path).with_context(|| format!("reading {path}"))?;
+        let id = std::path::Path::new(path)
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("imported")
+            .to_string();
+        importer::parse(&text, &id)
+    }
+}
+
+/// Resolve a song from a catalogue id, or a path to a tab/`.mid` file.
+fn resolve_song(id_or_path: &str) -> Result<Song> {
+    if std::path::Path::new(id_or_path).exists() {
+        return load_song_file(id_or_path);
+    }
+    match data::find_song(id_or_path)? {
+        Some(s) => Ok(s),
+        None => bail!("no song with id '{id_or_path}' (and no such file)"),
+    }
+}
+
+fn learn(id: &str, input: Option<usize>, output: Option<usize>, octave_any: bool) -> Result<()> {
+    let song = resolve_song(id)?;
+    midi::learn_song(&song, input, output, octave_any)?;
+    if let Some(user) = UserStore::load()?.current {
+        let mut p = Progress::load(&user)?;
+        p.record_song(&song.id);
+        p.save(&user)?;
+    }
+    Ok(())
+}
+
+fn import(path: &str, play_it: bool, save: Option<String>) -> Result<()> {
+    let mut song = load_song_file(path)?;
+    println!("Imported {}", songs::summary(&song));
+    if play_it {
+        midi::play_song(&song, None)?;
+    }
+    if let Some(id) = save {
+        let dir = data::data_root().join("songs");
+        std::fs::create_dir_all(&dir)?;
+        song.id = id.clone();
+        let json = serde_json::to_string_pretty(&song)?;
+        std::fs::write(dir.join(format!("{id}.json")), json)?;
+        println!("Saved as songs/{id}.json — try `maestro learn {id}`");
+    }
+    Ok(())
 }
 
 fn read_secret(label: &str) -> Result<String> {

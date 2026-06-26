@@ -8,10 +8,12 @@
 pub mod cli;
 pub mod config;
 pub mod data;
+pub mod importer;
 pub mod midi;
 pub mod model;
 pub mod music;
 pub mod notes;
+pub mod practice;
 pub mod progress;
 pub mod songs;
 pub mod theory;

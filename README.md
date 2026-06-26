@@ -1,7 +1,8 @@
 # Maestro
 
 A terminal piano-learning companion written in Rust. Maestro teaches scales,
-chord progressions and short pieces, optionally driving a real MIDI device.
+chord progressions and songs, and can **interactively teach you any song** on a
+real MIDI keyboard — show the next note, wait until you play it, score you.
 
 ## Quick start
 
@@ -14,19 +15,37 @@ cargo run -- scales
 cargo run -- scale c_major --play
 cargo run -- chord c_i_iv_v
 cargo run -- songs
-cargo run -- play twinkle
+cargo run -- play el_manicero
+
+# interactively learn a song on your keyboard (needs the midi feature)
+cargo run --features midi -- learn twinkle
+cargo run --features midi -- learn examples/ode_to_joy.txt
+```
+
+On Windows with a CASIO and no toolchain set up, use the bundled scripts
+(no build required) — see [Interactive learning](docs/learning.md):
+
+```powershell
+.\scripts\windows\play-casio.ps1 -Id el_manicero
+.\scripts\windows\maestro-learn.ps1 -Id twinkle
 ```
 
 ## Features
 
+- **Interactive wait-mode learning** — `learn <song>` highlights each note and
+  only advances when you play it, with ear feedback and an accuracy score.
+- **Learn any song** — `import` a text tab you typed (e.g. from Songsterr) or a
+  `.mid` file, then `learn` it. Bundled popular songs: El Manicero, Amor,
+  Cielito Lindo, La Bamba, Bésame Mucho, plus classics.
 - **Scales** — 12 keys × 12 scale types, loaded from `data/scales/`.
 - **Chord progressions** — common progressions in every key.
 - **Songs & etudes** — built-in melodies plus generated practice etudes.
 - **Users & progress** — local accounts (`register`/`login`) with per-user
   practice tracking.
 - **Configuration** — tempo, default device and theme in a JSON config.
-- **MIDI** — live device output behind the optional `midi` feature; `.mid`
-  file import via `midly` is always available.
+- **MIDI** — live device input/output behind the optional `midi` feature; `.mid`
+  file import via `midly` is always available. Windows WinMM scripts under
+  [`scripts/windows/`](scripts/windows/) drive a keyboard with no build.
 
 ## Building
 
