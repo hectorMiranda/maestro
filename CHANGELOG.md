@@ -2,6 +2,18 @@
 
 All notable changes to Maestro.
 
+## 0.10.0 — Playlists & better import
+
+- **Playlists**: build your own ordered sets of songs and play them back-to-back
+  (`maestro playlist create/add/remove/show/play`, plus a Playlists screen in the
+  interactive menu). Like Spotify, but you import and own the songs.
+- **Shareable bundles**: `playlist export`/`import` write a self-contained file
+  that embeds every song, so a playlist plays on anyone's machine.
+- **Correct MIDI import**: `.mid` files now convert ticks→milliseconds using the
+  file's division and tempo map (was treating ticks as ms); polyphony is
+  flattened to a clean top-line melody with rests.
+- Added "Amor" (Emmanuel Cortes), auto-transcribed from audio.
+
 ## 0.9.0 — Live piano keyboard
 
 - The "Now playing" screen now draws an **ASCII piano keyboard** that lights up

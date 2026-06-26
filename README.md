@@ -37,6 +37,9 @@ On Windows with a CASIO and no toolchain set up, use the bundled scripts
   playing piece. Selections play to an auto-detected keyboard (e.g. a CASIO).
 - **Live ASCII piano** — while a song, scale or chord plays, an on-screen piano
   lights up the key(s) being played and scrolls to follow the melody.
+- **Playlists** — import songs (`.mid`, text tabs, or audio transcriptions),
+  build ordered playlists, play them back-to-back, and share a playlist as one
+  self-contained file. See [docs/playlists.md](docs/playlists.md).
 - **Interactive wait-mode learning** — `learn <song>` highlights each note and
   only advances when you play it, with ear feedback and an accuracy score.
 - **Learn any song** — `import` a text tab you typed (e.g. from Songsterr) or a
