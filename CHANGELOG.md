@@ -2,6 +2,14 @@
 
 All notable changes to Maestro.
 
+## 0.7.1 — Startup polish
+
+- The interactive menu now **auto-detects a connected CASIO** (any output whose
+  name matches) and greets you with a short, classy startup chime (a rolled
+  C-major arpeggio). Silence it with `MAESTRO_NO_CHIME=1`.
+- Menu scale/song playback and the chime route to the detected device.
+- `auto_output`/`auto_input` helpers; the devices menu lists inputs too.
+
 ## 0.7.0 — Interactive learning
 
 - `learn <song>` — interactive wait-mode practice: shows the next note, waits

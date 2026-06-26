@@ -142,6 +142,82 @@ pub fn input_devices() -> Result<Vec<String>> {
     Ok(Vec::new())
 }
 
+/// Pick the best output device, preferring one whose name contains `prefer`
+/// (case-insensitive, e.g. "casio"); falls back to the first device.
+/// Returns `None` when no devices are available (e.g. no `midi` feature).
+pub fn auto_output(prefer: &str) -> Option<(usize, String)> {
+    let devices = output_devices().ok()?;
+    if devices.is_empty() {
+        return None;
+    }
+    let needle = prefer.to_lowercase();
+    let idx = devices
+        .iter()
+        .position(|n| n.to_lowercase().contains(&needle))
+        .unwrap_or(0);
+    Some((idx, devices[idx].clone()))
+}
+
+/// Like [`auto_output`] but for MIDI input devices (your keyboard).
+pub fn auto_input(prefer: &str) -> Option<(usize, String)> {
+    let devices = input_devices().ok()?;
+    if devices.is_empty() {
+        return None;
+    }
+    let needle = prefer.to_lowercase();
+    let idx = devices
+        .iter()
+        .position(|n| n.to_lowercase().contains(&needle))
+        .unwrap_or(0);
+    Some((idx, devices[idx].clone()))
+}
+
+/// Play a short, classy startup flourish (a rolled C-major chord) to the
+/// output device. Silenced by `MAESTRO_NO_CHIME`; a no-op without the `midi`
+/// feature or when no device is connected.
+pub fn play_chime(device: Option<usize>) -> Result<()> {
+    #[cfg(feature = "midi")]
+    {
+        if std::env::var_os("MAESTRO_NO_CHIME").is_some() {
+            return Ok(());
+        }
+        use midir::MidiOutput;
+        use std::{thread, time::Duration};
+        let out = MidiOutput::new("maestro-chime")?;
+        let ports = out.ports();
+        let idx = device.unwrap_or(0);
+        let Some(port) = ports.get(idx) else {
+            return Ok(());
+        };
+        let mut conn = match out.connect(port, "maestro-chime") {
+            Ok(c) => c,
+            Err(_) => return Ok(()),
+        };
+        // Gentle ascending C-major(9) arpeggio.
+        for note in [60u8, 64, 67, 71, 74, 76] {
+            let _ = conn.send(&[0x90, note, 72]);
+            thread::sleep(Duration::from_millis(75));
+            let _ = conn.send(&[0x80, note, 0]);
+        }
+        thread::sleep(Duration::from_millis(40));
+        // Soft resolving chord.
+        let chord = [60u8, 64, 67, 72];
+        for note in chord {
+            let _ = conn.send(&[0x90, note, 64]);
+        }
+        thread::sleep(Duration::from_millis(750));
+        for note in chord {
+            let _ = conn.send(&[0x80, note, 0]);
+        }
+        Ok(())
+    }
+    #[cfg(not(feature = "midi"))]
+    {
+        let _ = device;
+        Ok(())
+    }
+}
+
 /// Run an interactive "wait mode" learning session for a song: show the next
 /// note, wait until it is played on the input device, score accuracy.
 ///
