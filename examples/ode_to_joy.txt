@@ -1,0 +1,11 @@
+# name: Ode to Joy
+# composer: Beethoven
+# tempo: 120
+# A Maestro text tab. Tokens are NOTE:DURATION (q=quarter, h=half, e=eighth,
+# w=whole, s=sixteenth; add a dot like q. to dot it; or use raw ms like C4:350).
+# 'R' is a rest. Bar lines '|' are ignored. Learn it with:
+#   maestro learn examples/ode_to_joy.txt
+E4:q E4:q F4:q G4:q | G4:q F4:q E4:q D4:q
+C4:q C4:q D4:q E4:q | E4:q. D4:e D4:h
+E4:q E4:q F4:q G4:q | G4:q F4:q E4:q D4:q
+C4:q C4:q D4:q E4:q | D4:q. C4:e C4:h
