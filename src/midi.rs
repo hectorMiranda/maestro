@@ -185,6 +185,67 @@ pub fn input_devices() -> Result<Vec<String>> {
     Ok(Vec::new())
 }
 
+/// An open MIDI output connection you can drive note-by-note and silence at
+/// will — used by the TUI so playback can be interrupted (Esc) cleanly.
+///
+/// Without the `midi` feature (or when [`MidiSink::open`] finds no device) it
+/// becomes a no-op, so callers can animate the UI with or without sound.
+#[cfg(feature = "midi")]
+pub struct MidiSink {
+    conn: midir::MidiOutputConnection,
+    active: std::collections::BTreeSet<u8>,
+}
+
+#[cfg(feature = "midi")]
+impl MidiSink {
+    pub fn open(device: Option<usize>) -> Result<Option<Self>> {
+        use midir::MidiOutput;
+        let out = MidiOutput::new("maestro")?;
+        let ports = out.ports();
+        let idx = device.unwrap_or(0);
+        let Some(port) = ports.get(idx) else {
+            return Ok(None);
+        };
+        match out.connect(port, "maestro") {
+            Ok(conn) => Ok(Some(MidiSink {
+                conn,
+                active: std::collections::BTreeSet::new(),
+            })),
+            Err(_) => Ok(None),
+        }
+    }
+
+    pub fn note_on(&mut self, note: u8, velocity: u8) {
+        let _ = self.conn.send(&[0x90, note, velocity]);
+        self.active.insert(note);
+    }
+
+    pub fn note_off(&mut self, note: u8) {
+        let _ = self.conn.send(&[0x80, note, 0]);
+        self.active.remove(&note);
+    }
+
+    /// Panic button: release every note still held.
+    pub fn all_off(&mut self) {
+        for note in std::mem::take(&mut self.active) {
+            let _ = self.conn.send(&[0x80, note, 0]);
+        }
+    }
+}
+
+#[cfg(not(feature = "midi"))]
+pub struct MidiSink;
+
+#[cfg(not(feature = "midi"))]
+impl MidiSink {
+    pub fn open(_device: Option<usize>) -> Result<Option<Self>> {
+        Ok(None)
+    }
+    pub fn note_on(&mut self, _note: u8, _velocity: u8) {}
+    pub fn note_off(&mut self, _note: u8) {}
+    pub fn all_off(&mut self) {}
+}
+
 /// Pick the best output device, preferring one whose name contains `prefer`
 /// (case-insensitive, e.g. "casio"); falls back to the first device.
 /// Returns `None` when no devices are available (e.g. no `midi` feature).
