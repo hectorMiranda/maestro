@@ -68,6 +68,49 @@ pub fn play_song(song: &Song, device: Option<usize>) -> Result<()> {
     }
 }
 
+/// Play a chord progression: each chord's notes sound together, then release.
+///
+/// With the `midi` feature this drives the device; without it, it prints the
+/// chords so the command is still informative.
+pub fn play_chord_progression(
+    prog: &crate::model::ChordProgression,
+    device: Option<usize>,
+) -> Result<()> {
+    #[cfg(feature = "midi")]
+    {
+        use midir::MidiOutput;
+        use std::{thread, time::Duration};
+        let out = MidiOutput::new("maestro")?;
+        let ports = out.ports();
+        let idx = device.unwrap_or(0);
+        let port = ports.get(idx).context("no such MIDI output device")?;
+        let mut conn = out
+            .connect(port, "maestro-chords")
+            .map_err(|e| anyhow::anyhow!("MIDI connect failed: {e}"))?;
+        for chord in &prog.chords {
+            for note in chord {
+                let _ = conn.send(&[0x90, *note, 72]);
+            }
+            thread::sleep(Duration::from_millis(750));
+            for note in chord {
+                let _ = conn.send(&[0x80, *note, 0]);
+            }
+            thread::sleep(Duration::from_millis(140));
+        }
+        Ok(())
+    }
+    #[cfg(not(feature = "midi"))]
+    {
+        let _ = device;
+        println!(
+            "(no MIDI feature) {} — {} chords",
+            prog.name,
+            prog.chords.len()
+        );
+        Ok(())
+    }
+}
+
 /// Load a `.mid` file and flatten it into a [`Song`] of monophonic events.
 ///
 /// This is a deliberately simple importer: it walks the first track with note
