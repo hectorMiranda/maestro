@@ -5,7 +5,7 @@
 //! search, scrolling lists that stay on screen, and Esc to stop a playing
 //! piece. Falls back to a message when there is no interactive terminal.
 
-use crate::{data, midi, model::Song};
+use crate::{data, keyboard, midi, model::Song};
 use anyhow::Result;
 use crossterm::{
     cursor::{Hide, MoveTo, Show},
@@ -17,6 +17,7 @@ use crossterm::{
         LeaveAlternateScreen,
     },
 };
+use std::collections::BTreeSet;
 use std::io::{stdout, Stdout, Write};
 use std::time::Duration;
 
@@ -187,15 +188,37 @@ fn browse(out: &mut Stdout, title: &str, entries: &[Entry], device: Option<usize
     Ok(())
 }
 
-/// Play an entry, animating a "now playing" screen; Esc stops immediately.
+/// The lowest and highest sounding notes of an entry (for the keyboard span).
+fn note_range(entry: &Entry) -> (u8, u8) {
+    let notes: Vec<u8> = match &entry.play {
+        Playable::Notes(ns) => ns
+            .iter()
+            .filter(|(_, v, _)| *v > 0)
+            .map(|(n, _, _)| *n)
+            .collect(),
+        Playable::Chords(cs) => cs.iter().flatten().copied().collect(),
+    };
+    let lo = notes.iter().copied().min().unwrap_or(60);
+    let hi = notes.iter().copied().max().unwrap_or(72);
+    (lo, hi)
+}
+
+/// Play an entry, animating a "now playing" screen with a live keyboard;
+/// Esc stops immediately.
 fn play_entry(out: &mut Stdout, entry: &Entry, device: Option<usize>) -> Result<()> {
     let mut sink = midi::MidiSink::open(device)?;
     let footer = "Esc to stop";
+    let (lo, hi) = note_range(entry);
     match &entry.play {
         Playable::Notes(notes) => {
             let total = notes.len();
             for (i, (note, vel, dur)) in notes.iter().enumerate() {
-                now_playing(out, &entry.label, i + 1, total, Some(*note), footer)?;
+                let active: BTreeSet<u8> = if *vel > 0 {
+                    BTreeSet::from([*note])
+                } else {
+                    BTreeSet::new()
+                };
+                now_playing(out, &entry.label, i + 1, total, &active, lo, hi, footer)?;
                 if let Some(s) = sink.as_mut() {
                     if *vel > 0 {
                         s.note_on(*note, *vel);
@@ -215,7 +238,8 @@ fn play_entry(out: &mut Stdout, entry: &Entry, device: Option<usize>) -> Result<
         Playable::Chords(chords) => {
             let total = chords.len();
             for (i, chord) in chords.iter().enumerate() {
-                now_playing(out, &entry.label, i + 1, total, None, footer)?;
+                let active: BTreeSet<u8> = chord.iter().copied().collect();
+                now_playing(out, &entry.label, i + 1, total, &active, lo, hi, footer)?;
                 if let Some(s) = sink.as_mut() {
                     for n in chord {
                         s.note_on(*n, 72);
@@ -382,21 +406,28 @@ fn render(
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 fn now_playing(
     out: &mut Stdout,
     label: &str,
     pos: usize,
     total: usize,
-    note: Option<u8>,
+    active: &BTreeSet<u8>,
+    lo: u8,
+    hi: u8,
     footer: &str,
 ) -> Result<()> {
     let (cols, rows) = term_size();
-    let width = cols.saturating_sub(10).max(1);
-    let filled = (pos * width) / total.max(1);
-    let bar: String = "█".repeat(filled) + &"░".repeat(width.saturating_sub(filled));
-    let note_line = match note {
-        Some(n) => format!("♪  {}", crate::notes::note_name(n)),
-        None => "♪  chord".to_string(),
+    let bar_w = cols.saturating_sub(12).max(1);
+    let filled = (pos * bar_w) / total.max(1);
+    let bar: String = "█".repeat(filled) + &"░".repeat(bar_w.saturating_sub(filled));
+    let note_line = match active.iter().next() {
+        Some(_) if active.len() > 1 => {
+            let names: Vec<String> = active.iter().map(|n| crate::notes::note_name(*n)).collect();
+            format!("♪  {}", names.join(" "))
+        }
+        Some(n) => format!("♪  {}", crate::notes::note_name(*n)),
+        None => "♪  —".to_string(),
     };
     queue!(
         out,
@@ -409,14 +440,55 @@ fn now_playing(
         ResetColor,
         MoveTo(0, 2),
         Print(truncate(&note_line, cols)),
-        MoveTo(0, 4),
+        MoveTo(0, 3),
         Print(truncate(&format!("{bar}  {pos}/{total}"), cols)),
+    )?;
+
+    // Live keyboard, vertically centred-ish in the remaining space.
+    let kb = keyboard::render(lo, hi, active, cols);
+    let start_y = 5u16;
+    for (r, row) in kb.rows.iter().enumerate() {
+        queue!(out, MoveTo(0, start_y + r as u16))?;
+        draw_cells(out, row)?;
+    }
+    queue!(
+        out,
+        MoveTo(0, start_y + kb.rows.len() as u16),
+        SetForegroundColor(Color::DarkGrey),
+        Print(truncate(&kb.labels, cols)),
+        ResetColor,
         MoveTo(0, rows.saturating_sub(1) as u16),
         SetForegroundColor(Color::DarkGrey),
         Print(truncate(footer, cols)),
         ResetColor,
     )?;
     out.flush()?;
+    Ok(())
+}
+
+/// Print a row of coloured keyboard cells, minimising colour changes.
+fn draw_cells(out: &mut Stdout, row: &[(char, Option<Color>)]) -> Result<()> {
+    let mut cur: Option<Color> = None;
+    let mut buf = String::new();
+    for (ch, color) in row {
+        if *color != cur {
+            if !buf.is_empty() {
+                flush_cells(out, &buf, cur)?;
+                buf.clear();
+            }
+            cur = *color;
+        }
+        buf.push(*ch);
+    }
+    flush_cells(out, &buf, cur)?;
+    Ok(())
+}
+
+fn flush_cells(out: &mut Stdout, text: &str, color: Option<Color>) -> Result<()> {
+    match color {
+        Some(c) => queue!(out, SetForegroundColor(c), Print(text), ResetColor)?,
+        None => queue!(out, Print(text))?,
+    }
     Ok(())
 }
 
