@@ -71,6 +71,7 @@ fn app_loop(out: &mut Stdout, device: Option<usize>, status: &str) -> Result<()>
         "Scales",
         "Chord Progressions",
         "Songs & Etudes",
+        "Playlists",
         "MIDI Devices",
         "Quit",
     ];
@@ -99,7 +100,8 @@ fn app_loop(out: &mut Stdout, device: Option<usize>, status: &str) -> Result<()>
                 0 => browse(out, "Scales", &scale_entries()?, device)?,
                 1 => browse(out, "Chord Progressions", &chord_entries()?, device)?,
                 2 => browse(out, "Songs & Etudes", &song_entries()?, device)?,
-                3 => devices_screen(out)?,
+                3 => playlists_screen(out, device)?,
+                4 => devices_screen(out)?,
                 _ => break,
             },
             _ => {}
@@ -167,7 +169,7 @@ fn browse(out: &mut Stdout, title: &str, entries: &[Entry], device: Option<usize
             KeyCode::End => sel = filtered.len().saturating_sub(1),
             KeyCode::Enter => {
                 if let Some(entry) = filtered.get(sel) {
-                    play_entry(out, entry, device)?;
+                    play_entry(out, entry, device, "Esc to stop")?;
                 }
             }
             KeyCode::Esc => break,
@@ -203,12 +205,17 @@ fn note_range(entry: &Entry) -> (u8, u8) {
     (lo, hi)
 }
 
-/// Play an entry, animating a "now playing" screen with a live keyboard;
-/// Esc stops immediately.
-fn play_entry(out: &mut Stdout, entry: &Entry, device: Option<usize>) -> Result<()> {
+/// Play an entry, animating a "now playing" screen with a live keyboard.
+/// Returns `true` if the user pressed Esc (so a playlist can stop).
+fn play_entry(
+    out: &mut Stdout,
+    entry: &Entry,
+    device: Option<usize>,
+    footer: &str,
+) -> Result<bool> {
     let mut sink = midi::MidiSink::open(device)?;
-    let footer = "Esc to stop";
     let (lo, hi) = note_range(entry);
+    let mut interrupted = false;
     match &entry.play {
         Playable::Notes(notes) => {
             let total = notes.len();
@@ -231,6 +238,7 @@ fn play_entry(out: &mut Stdout, entry: &Entry, device: Option<usize>) -> Result<
                     }
                 }
                 if stop {
+                    interrupted = true;
                     break;
                 }
             }
@@ -245,13 +253,15 @@ fn play_entry(out: &mut Stdout, entry: &Entry, device: Option<usize>) -> Result<
                         s.note_on(*n, 72);
                     }
                 }
-                let stop = wait_or_esc(750)?;
+                if wait_or_esc(750)? || wait_or_esc(140)? {
+                    interrupted = true;
+                }
                 if let Some(s) = sink.as_mut() {
                     for n in chord {
                         s.note_off(*n);
                     }
                 }
-                if stop || wait_or_esc(140)? {
+                if interrupted {
                     break;
                 }
             }
@@ -260,7 +270,7 @@ fn play_entry(out: &mut Stdout, entry: &Entry, device: Option<usize>) -> Result<
     if let Some(s) = sink.as_mut() {
         s.all_off();
     }
-    Ok(())
+    Ok(interrupted)
 }
 
 /// Sleep up to `ms`, returning true if Esc (or Ctrl-C) was pressed.
@@ -325,6 +335,88 @@ fn devices_screen(out: &mut Stdout) -> Result<()> {
             {
                 break;
             }
+        }
+    }
+    Ok(())
+}
+
+fn song_to_entry(s: &Song) -> Entry {
+    Entry {
+        label: format!("{}   [{}]", crate::songs::summary(s), s.id),
+        id: s.id.clone(),
+        play: Playable::Notes(s.notes.clone()),
+    }
+}
+
+/// Browse playlists; Enter plays the whole playlist back-to-back.
+fn playlists_screen(out: &mut Stdout, device: Option<usize>) -> Result<()> {
+    let playlists = data::load_playlists()?;
+    if playlists.is_empty() {
+        let lines = vec![
+            "No playlists yet.".to_string(),
+            String::new(),
+            "Create one from the command line:".into(),
+            "  maestro playlist create my_mix --name \"My Mix\"".into(),
+            "  maestro import song.mid --save my_song".into(),
+            "  maestro playlist add my_mix my_song".into(),
+        ];
+        loop {
+            render(out, "Playlists", "", &lines, usize::MAX, 0, "Esc back")?;
+            if let Event::Key(k) = event::read()? {
+                if k.kind != KeyEventKind::Release
+                    && matches!(k.code, KeyCode::Esc | KeyCode::Enter | KeyCode::Char('q'))
+                {
+                    break;
+                }
+            }
+        }
+        return Ok(());
+    }
+
+    let mut sel = 0usize;
+    loop {
+        let labels: Vec<String> = playlists
+            .iter()
+            .map(|p| format!("{}   ({} tracks)   [{}]", p.name, p.tracks.len(), p.id))
+            .collect();
+        render(
+            out,
+            "Playlists",
+            "Enter plays the whole list",
+            &labels,
+            sel,
+            0,
+            "↑/↓ move   Enter play   Esc back",
+        )?;
+        let Event::Key(key) = event::read()? else {
+            continue;
+        };
+        if key.kind == KeyEventKind::Release {
+            continue;
+        }
+        match key.code {
+            KeyCode::Up => sel = sel.saturating_sub(1),
+            KeyCode::Down => sel = (sel + 1).min(playlists.len() - 1),
+            KeyCode::Enter => play_playlist(out, &playlists[sel], device)?,
+            KeyCode::Esc | KeyCode::Char('q') => break,
+            _ => {}
+        }
+    }
+    Ok(())
+}
+
+fn play_playlist(
+    out: &mut Stdout,
+    p: &crate::model::Playlist,
+    device: Option<usize>,
+) -> Result<()> {
+    let (songs, _missing) = crate::playlist::resolve(p)?;
+    let total = songs.len();
+    for (i, song) in songs.iter().enumerate() {
+        let entry = song_to_entry(song);
+        let footer = format!("track {}/{}   Esc to stop", i + 1, total);
+        if play_entry(out, &entry, device, &footer)? {
+            break; // Esc stops the playlist
         }
     }
     Ok(())
