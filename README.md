@@ -35,6 +35,8 @@ On Windows with a CASIO and no toolchain set up, use the bundled scripts
 - **Modern interactive menu** — run `maestro` with no arguments for a full-screen
   UI: arrow-key navigation, type-to-search, scrolling lists, and `Esc` to stop a
   playing piece. Selections play to an auto-detected keyboard (e.g. a CASIO).
+- **Live ASCII piano** — while a song, scale or chord plays, an on-screen piano
+  lights up the key(s) being played and scrolls to follow the melody.
 - **Interactive wait-mode learning** — `learn <song>` highlights each note and
   only advances when you play it, with ear feedback and an accuracy score.
 - **Learn any song** — `import` a text tab you typed (e.g. from Songsterr) or a

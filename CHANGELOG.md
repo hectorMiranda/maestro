@@ -2,6 +2,15 @@
 
 All notable changes to Maestro.
 
+## 0.9.0 — Live piano keyboard
+
+- The "Now playing" screen now draws an **ASCII piano keyboard** that lights up
+  the key(s) being played (white keys green, black keys cyan) for songs, scales
+  and chords — see the new `keyboard` module.
+- The keyboard spans the octaves the piece covers and **scrolls to follow the
+  melody** when it's wider than the terminal.
+- Chord playback highlights all notes of the chord at once.
+
 ## 0.8.0 — Modern interactive UI
 
 - Full-screen `crossterm` TUI: **arrow-key navigation**, scrolling lists that
