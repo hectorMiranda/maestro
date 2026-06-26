@@ -2,6 +2,19 @@
 
 All notable changes to Maestro.
 
+## 0.7.0 — Interactive learning
+
+- `learn <song>` — interactive wait-mode practice: shows the next note, waits
+  for you to play it on a MIDI keyboard, echoes feedback, scores accuracy.
+- `import <file>` — load a song from a text tab or `.mid` file; `--play` or
+  `--save <id>` it into the catalogue. Learn *any* song you can transcribe.
+- MIDI **input** support and `devices` now lists inputs and outputs.
+- Bundled popular songs: El Manicero, Amor, Cielito Lindo, La Bamba, Bésame
+  Mucho.
+- Windows WinMM scripts (`scripts/windows/`): `play-casio.ps1` and an
+  interactive `maestro-learn.ps1` that need no Rust build.
+- New `practice` and `importer` modules with unit tests; `docs/learning.md`.
+
 ## Unreleased
 
 - tidy scale display column alignment
