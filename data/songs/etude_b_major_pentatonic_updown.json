@@ -1,0 +1,64 @@
+{
+  "id": "etude_b_major_pentatonic_updown",
+  "name": "B Major Pentatonic — Up & Down Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Up & Down practice etude over the B major pentatonic scale.",
+  "notes": [
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      73,
+      64,
+      360
+    ],
+    [
+      75,
+      64,
+      360
+    ],
+    [
+      78,
+      64,
+      360
+    ],
+    [
+      80,
+      64,
+      360
+    ],
+    [
+      83,
+      64,
+      360
+    ],
+    [
+      80,
+      64,
+      360
+    ],
+    [
+      78,
+      64,
+      360
+    ],
+    [
+      75,
+      64,
+      360
+    ],
+    [
+      73,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ]
+  ]
+}

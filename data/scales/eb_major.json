@@ -1,0 +1,27 @@
+{
+  "id": "eb_major",
+  "name": "Eb Major",
+  "root": "Eb",
+  "type": "major",
+  "notes": [
+    63,
+    65,
+    67,
+    68,
+    70,
+    72,
+    74,
+    75
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    5,
+    7,
+    9,
+    11,
+    12
+  ],
+  "description": "The Eb major scale."
+}

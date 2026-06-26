@@ -1,0 +1,34 @@
+{
+  "id": "etude_c_natural_minor_arpeggio",
+  "name": "C Natural Minor — Arpeggio Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Arpeggio practice etude over the C natural minor scale.",
+  "notes": [
+    [
+      60,
+      64,
+      360
+    ],
+    [
+      63,
+      64,
+      360
+    ],
+    [
+      67,
+      64,
+      360
+    ],
+    [
+      63,
+      64,
+      360
+    ],
+    [
+      60,
+      64,
+      360
+    ]
+  ]
+}

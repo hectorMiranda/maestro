@@ -1,0 +1,27 @@
+{
+  "id": "gb_harmonic_minor",
+  "name": "Gb Harmonic Minor",
+  "root": "Gb",
+  "type": "harmonic_minor",
+  "notes": [
+    66,
+    68,
+    69,
+    71,
+    73,
+    74,
+    77,
+    78
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    8,
+    11,
+    12
+  ],
+  "description": "The Gb harmonic minor scale."
+}

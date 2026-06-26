@@ -1,0 +1,27 @@
+{
+  "id": "e_lydian",
+  "name": "E Lydian",
+  "root": "E",
+  "type": "lydian",
+  "notes": [
+    64,
+    66,
+    68,
+    70,
+    71,
+    73,
+    75,
+    76
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    6,
+    7,
+    9,
+    11,
+    12
+  ],
+  "description": "The E lydian scale."
+}

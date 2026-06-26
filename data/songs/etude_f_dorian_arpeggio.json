@@ -1,0 +1,34 @@
+{
+  "id": "etude_f_dorian_arpeggio",
+  "name": "F Dorian — Arpeggio Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Arpeggio practice etude over the F dorian scale.",
+  "notes": [
+    [
+      65,
+      64,
+      360
+    ],
+    [
+      68,
+      64,
+      360
+    ],
+    [
+      72,
+      64,
+      360
+    ],
+    [
+      68,
+      64,
+      360
+    ],
+    [
+      65,
+      64,
+      360
+    ]
+  ]
+}

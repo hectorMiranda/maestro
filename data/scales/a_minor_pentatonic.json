@@ -1,0 +1,23 @@
+{
+  "id": "a_minor_pentatonic",
+  "name": "A Minor Pentatonic",
+  "root": "A",
+  "type": "minor_pentatonic",
+  "notes": [
+    69,
+    72,
+    74,
+    76,
+    79,
+    81
+  ],
+  "intervals": [
+    0,
+    3,
+    5,
+    7,
+    10,
+    12
+  ],
+  "description": "The A minor pentatonic scale."
+}

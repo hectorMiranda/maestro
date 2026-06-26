@@ -1,0 +1,34 @@
+{
+  "id": "etude_ab_major_arpeggio",
+  "name": "Ab Major — Arpeggio Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Arpeggio practice etude over the Ab major scale.",
+  "notes": [
+    [
+      68,
+      64,
+      360
+    ],
+    [
+      72,
+      64,
+      360
+    ],
+    [
+      75,
+      64,
+      360
+    ],
+    [
+      72,
+      64,
+      360
+    ],
+    [
+      68,
+      64,
+      360
+    ]
+  ]
+}

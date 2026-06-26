@@ -1,0 +1,23 @@
+{
+  "id": "a_major_pentatonic",
+  "name": "A Major Pentatonic",
+  "root": "A",
+  "type": "major_pentatonic",
+  "notes": [
+    69,
+    71,
+    73,
+    76,
+    78,
+    81
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    7,
+    9,
+    12
+  ],
+  "description": "The A major pentatonic scale."
+}

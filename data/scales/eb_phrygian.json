@@ -1,0 +1,27 @@
+{
+  "id": "eb_phrygian",
+  "name": "Eb Phrygian",
+  "root": "Eb",
+  "type": "phrygian",
+  "notes": [
+    63,
+    64,
+    66,
+    68,
+    70,
+    71,
+    73,
+    75
+  ],
+  "intervals": [
+    0,
+    1,
+    3,
+    5,
+    7,
+    8,
+    10,
+    12
+  ],
+  "description": "The Eb phrygian scale."
+}

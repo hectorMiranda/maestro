@@ -1,0 +1,23 @@
+{
+  "id": "g_major_pentatonic",
+  "name": "G Major Pentatonic",
+  "root": "G",
+  "type": "major_pentatonic",
+  "notes": [
+    67,
+    69,
+    71,
+    74,
+    76,
+    79
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    7,
+    9,
+    12
+  ],
+  "description": "The G major pentatonic scale."
+}

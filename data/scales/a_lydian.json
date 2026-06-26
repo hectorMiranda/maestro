@@ -1,0 +1,27 @@
+{
+  "id": "a_lydian",
+  "name": "A Lydian",
+  "root": "A",
+  "type": "lydian",
+  "notes": [
+    69,
+    71,
+    73,
+    75,
+    76,
+    78,
+    80,
+    81
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    6,
+    7,
+    9,
+    11,
+    12
+  ],
+  "description": "The A lydian scale."
+}

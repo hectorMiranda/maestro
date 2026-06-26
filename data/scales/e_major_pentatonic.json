@@ -1,0 +1,23 @@
+{
+  "id": "e_major_pentatonic",
+  "name": "E Major Pentatonic",
+  "root": "E",
+  "type": "major_pentatonic",
+  "notes": [
+    64,
+    66,
+    68,
+    71,
+    73,
+    76
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    7,
+    9,
+    12
+  ],
+  "description": "The E major pentatonic scale."
+}

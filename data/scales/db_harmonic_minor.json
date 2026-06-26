@@ -1,0 +1,27 @@
+{
+  "id": "db_harmonic_minor",
+  "name": "Db Harmonic Minor",
+  "root": "Db",
+  "type": "harmonic_minor",
+  "notes": [
+    61,
+    63,
+    64,
+    66,
+    68,
+    69,
+    72,
+    73
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    8,
+    11,
+    12
+  ],
+  "description": "The Db harmonic minor scale."
+}

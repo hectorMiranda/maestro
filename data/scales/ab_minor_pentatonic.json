@@ -1,0 +1,23 @@
+{
+  "id": "ab_minor_pentatonic",
+  "name": "Ab Minor Pentatonic",
+  "root": "Ab",
+  "type": "minor_pentatonic",
+  "notes": [
+    68,
+    71,
+    73,
+    75,
+    78,
+    80
+  ],
+  "intervals": [
+    0,
+    3,
+    5,
+    7,
+    10,
+    12
+  ],
+  "description": "The Ab minor pentatonic scale."
+}

@@ -1,0 +1,34 @@
+{
+  "id": "d_ii_v_i_vi",
+  "name": "D ii-V-I-vi",
+  "key": "D",
+  "numerals": [
+    "ii",
+    "V",
+    "I",
+    "vi"
+  ],
+  "chords": [
+    [
+      64,
+      67,
+      71
+    ],
+    [
+      69,
+      73,
+      76
+    ],
+    [
+      62,
+      66,
+      69
+    ],
+    [
+      71,
+      74,
+      78
+    ]
+  ],
+  "description": "The ii-V-I-vi progression in D."
+}

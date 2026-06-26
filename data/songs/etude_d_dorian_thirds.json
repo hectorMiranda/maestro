@@ -1,0 +1,69 @@
+{
+  "id": "etude_d_dorian_thirds",
+  "name": "D Dorian — Thirds Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Thirds practice etude over the D dorian scale.",
+  "notes": [
+    [
+      62,
+      64,
+      360
+    ],
+    [
+      65,
+      64,
+      360
+    ],
+    [
+      64,
+      64,
+      360
+    ],
+    [
+      67,
+      64,
+      360
+    ],
+    [
+      65,
+      64,
+      360
+    ],
+    [
+      69,
+      64,
+      360
+    ],
+    [
+      67,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      69,
+      64,
+      360
+    ],
+    [
+      72,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      74,
+      64,
+      360
+    ]
+  ]
+}

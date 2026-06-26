@@ -1,0 +1,27 @@
+{
+  "id": "ab_melodic_minor",
+  "name": "Ab Melodic Minor",
+  "root": "Ab",
+  "type": "melodic_minor",
+  "notes": [
+    68,
+    70,
+    71,
+    73,
+    75,
+    77,
+    79,
+    80
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    9,
+    11,
+    12
+  ],
+  "description": "The Ab melodic minor scale."
+}

@@ -1,0 +1,27 @@
+{
+  "id": "b_lydian",
+  "name": "B Lydian",
+  "root": "B",
+  "type": "lydian",
+  "notes": [
+    71,
+    73,
+    75,
+    77,
+    78,
+    80,
+    82,
+    83
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    6,
+    7,
+    9,
+    11,
+    12
+  ],
+  "description": "The B lydian scale."
+}

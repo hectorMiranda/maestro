@@ -1,0 +1,27 @@
+{
+  "id": "gb_phrygian",
+  "name": "Gb Phrygian",
+  "root": "Gb",
+  "type": "phrygian",
+  "notes": [
+    66,
+    67,
+    69,
+    71,
+    73,
+    74,
+    76,
+    78
+  ],
+  "intervals": [
+    0,
+    1,
+    3,
+    5,
+    7,
+    8,
+    10,
+    12
+  ],
+  "description": "The Gb phrygian scale."
+}

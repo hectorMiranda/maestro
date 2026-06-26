@@ -1,0 +1,64 @@
+{
+  "id": "etude_e_major_pentatonic_updown",
+  "name": "E Major Pentatonic — Up & Down Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Up & Down practice etude over the E major pentatonic scale.",
+  "notes": [
+    [
+      64,
+      64,
+      360
+    ],
+    [
+      66,
+      64,
+      360
+    ],
+    [
+      68,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      73,
+      64,
+      360
+    ],
+    [
+      76,
+      64,
+      360
+    ],
+    [
+      73,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      68,
+      64,
+      360
+    ],
+    [
+      66,
+      64,
+      360
+    ],
+    [
+      64,
+      64,
+      360
+    ]
+  ]
+}

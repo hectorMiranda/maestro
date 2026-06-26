@@ -1,0 +1,28 @@
+{
+  "id": "f_ii_v_i",
+  "name": "F ii-V-I",
+  "key": "F",
+  "numerals": [
+    "ii",
+    "V",
+    "I"
+  ],
+  "chords": [
+    [
+      67,
+      70,
+      74
+    ],
+    [
+      72,
+      76,
+      79
+    ],
+    [
+      65,
+      69,
+      72
+    ]
+  ],
+  "description": "The ii-V-I progression in F."
+}

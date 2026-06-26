@@ -1,0 +1,49 @@
+{
+  "id": "etude_g_major_pentatonic_thirds",
+  "name": "G Major Pentatonic — Thirds Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Thirds practice etude over the G major pentatonic scale.",
+  "notes": [
+    [
+      67,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      69,
+      64,
+      360
+    ],
+    [
+      74,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      76,
+      64,
+      360
+    ],
+    [
+      74,
+      64,
+      360
+    ],
+    [
+      79,
+      64,
+      360
+    ]
+  ]
+}

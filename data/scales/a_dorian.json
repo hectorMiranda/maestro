@@ -1,0 +1,27 @@
+{
+  "id": "a_dorian",
+  "name": "A Dorian",
+  "root": "A",
+  "type": "dorian",
+  "notes": [
+    69,
+    71,
+    72,
+    74,
+    76,
+    78,
+    79,
+    81
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    9,
+    10,
+    12
+  ],
+  "description": "The A dorian scale."
+}

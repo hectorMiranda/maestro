@@ -1,0 +1,34 @@
+{
+  "id": "etude_bb_major_pentatonic_arpeggio",
+  "name": "Bb Major Pentatonic — Arpeggio Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Arpeggio practice etude over the Bb major pentatonic scale.",
+  "notes": [
+    [
+      70,
+      64,
+      360
+    ],
+    [
+      74,
+      64,
+      360
+    ],
+    [
+      79,
+      64,
+      360
+    ],
+    [
+      74,
+      64,
+      360
+    ],
+    [
+      70,
+      64,
+      360
+    ]
+  ]
+}

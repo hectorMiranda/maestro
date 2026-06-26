@@ -1,0 +1,27 @@
+{
+  "id": "b_dorian",
+  "name": "B Dorian",
+  "root": "B",
+  "type": "dorian",
+  "notes": [
+    71,
+    73,
+    74,
+    76,
+    78,
+    80,
+    81,
+    83
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    9,
+    10,
+    12
+  ],
+  "description": "The B dorian scale."
+}

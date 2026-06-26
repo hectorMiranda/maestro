@@ -1,0 +1,34 @@
+{
+  "id": "etude_b_blues_arpeggio",
+  "name": "B Blues — Arpeggio Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Arpeggio practice etude over the B blues scale.",
+  "notes": [
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      76,
+      64,
+      360
+    ],
+    [
+      78,
+      64,
+      360
+    ],
+    [
+      76,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ]
+  ]
+}

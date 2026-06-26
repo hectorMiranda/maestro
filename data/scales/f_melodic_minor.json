@@ -1,0 +1,27 @@
+{
+  "id": "f_melodic_minor",
+  "name": "F Melodic Minor",
+  "root": "F",
+  "type": "melodic_minor",
+  "notes": [
+    65,
+    67,
+    68,
+    70,
+    72,
+    74,
+    76,
+    77
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    9,
+    11,
+    12
+  ],
+  "description": "The F melodic minor scale."
+}

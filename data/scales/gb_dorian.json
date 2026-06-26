@@ -1,0 +1,27 @@
+{
+  "id": "gb_dorian",
+  "name": "Gb Dorian",
+  "root": "Gb",
+  "type": "dorian",
+  "notes": [
+    66,
+    68,
+    69,
+    71,
+    73,
+    75,
+    76,
+    78
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    9,
+    10,
+    12
+  ],
+  "description": "The Gb dorian scale."
+}

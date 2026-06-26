@@ -1,0 +1,27 @@
+{
+  "id": "bb_melodic_minor",
+  "name": "Bb Melodic Minor",
+  "root": "Bb",
+  "type": "melodic_minor",
+  "notes": [
+    70,
+    72,
+    73,
+    75,
+    77,
+    79,
+    81,
+    82
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    9,
+    11,
+    12
+  ],
+  "description": "The Bb melodic minor scale."
+}

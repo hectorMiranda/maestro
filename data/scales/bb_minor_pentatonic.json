@@ -1,0 +1,23 @@
+{
+  "id": "bb_minor_pentatonic",
+  "name": "Bb Minor Pentatonic",
+  "root": "Bb",
+  "type": "minor_pentatonic",
+  "notes": [
+    70,
+    73,
+    75,
+    77,
+    80,
+    82
+  ],
+  "intervals": [
+    0,
+    3,
+    5,
+    7,
+    10,
+    12
+  ],
+  "description": "The Bb minor pentatonic scale."
+}

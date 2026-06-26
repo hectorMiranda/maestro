@@ -1,0 +1,44 @@
+{
+  "id": "etude_f_blues_descending",
+  "name": "F Blues — Descending Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Descending practice etude over the F blues scale.",
+  "notes": [
+    [
+      77,
+      64,
+      360
+    ],
+    [
+      75,
+      64,
+      360
+    ],
+    [
+      72,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      70,
+      64,
+      360
+    ],
+    [
+      68,
+      64,
+      360
+    ],
+    [
+      65,
+      64,
+      360
+    ]
+  ]
+}

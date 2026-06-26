@@ -1,0 +1,64 @@
+{
+  "id": "etude_gb_major_pentatonic_updown",
+  "name": "Gb Major Pentatonic — Up & Down Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Up & Down practice etude over the Gb major pentatonic scale.",
+  "notes": [
+    [
+      66,
+      64,
+      360
+    ],
+    [
+      68,
+      64,
+      360
+    ],
+    [
+      70,
+      64,
+      360
+    ],
+    [
+      73,
+      64,
+      360
+    ],
+    [
+      75,
+      64,
+      360
+    ],
+    [
+      78,
+      64,
+      360
+    ],
+    [
+      75,
+      64,
+      360
+    ],
+    [
+      73,
+      64,
+      360
+    ],
+    [
+      70,
+      64,
+      360
+    ],
+    [
+      68,
+      64,
+      360
+    ],
+    [
+      66,
+      64,
+      360
+    ]
+  ]
+}

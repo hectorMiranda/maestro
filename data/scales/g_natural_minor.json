@@ -1,0 +1,27 @@
+{
+  "id": "g_natural_minor",
+  "name": "G Natural Minor",
+  "root": "G",
+  "type": "natural_minor",
+  "notes": [
+    67,
+    69,
+    70,
+    72,
+    74,
+    75,
+    77,
+    79
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    8,
+    10,
+    12
+  ],
+  "description": "The G natural minor scale."
+}

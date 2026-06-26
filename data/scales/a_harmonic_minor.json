@@ -1,0 +1,27 @@
+{
+  "id": "a_harmonic_minor",
+  "name": "A Harmonic Minor",
+  "root": "A",
+  "type": "harmonic_minor",
+  "notes": [
+    69,
+    71,
+    72,
+    74,
+    76,
+    77,
+    80,
+    81
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    8,
+    11,
+    12
+  ],
+  "description": "The A harmonic minor scale."
+}

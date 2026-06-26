@@ -1,0 +1,27 @@
+{
+  "id": "c_melodic_minor",
+  "name": "C Melodic Minor",
+  "root": "C",
+  "type": "melodic_minor",
+  "notes": [
+    60,
+    62,
+    63,
+    65,
+    67,
+    69,
+    71,
+    72
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    9,
+    11,
+    12
+  ],
+  "description": "The C melodic minor scale."
+}

@@ -1,0 +1,27 @@
+{
+  "id": "c_major",
+  "name": "C Major",
+  "root": "C",
+  "type": "major",
+  "notes": [
+    60,
+    62,
+    64,
+    65,
+    67,
+    69,
+    71,
+    72
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    5,
+    7,
+    9,
+    11,
+    12
+  ],
+  "description": "The C major scale."
+}

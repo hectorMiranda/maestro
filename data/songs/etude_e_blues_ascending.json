@@ -1,0 +1,44 @@
+{
+  "id": "etude_e_blues_ascending",
+  "name": "E Blues — Ascending Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Ascending practice etude over the E blues scale.",
+  "notes": [
+    [
+      64,
+      64,
+      360
+    ],
+    [
+      67,
+      64,
+      360
+    ],
+    [
+      69,
+      64,
+      360
+    ],
+    [
+      70,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      74,
+      64,
+      360
+    ],
+    [
+      76,
+      64,
+      360
+    ]
+  ]
+}

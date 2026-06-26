@@ -1,0 +1,23 @@
+{
+  "id": "e_minor_pentatonic",
+  "name": "E Minor Pentatonic",
+  "root": "E",
+  "type": "minor_pentatonic",
+  "notes": [
+    64,
+    67,
+    69,
+    71,
+    74,
+    76
+  ],
+  "intervals": [
+    0,
+    3,
+    5,
+    7,
+    10,
+    12
+  ],
+  "description": "The E minor pentatonic scale."
+}

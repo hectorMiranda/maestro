@@ -1,0 +1,28 @@
+{
+  "id": "c_ii_v_i",
+  "name": "C ii-V-I",
+  "key": "C",
+  "numerals": [
+    "ii",
+    "V",
+    "I"
+  ],
+  "chords": [
+    [
+      62,
+      65,
+      69
+    ],
+    [
+      67,
+      71,
+      74
+    ],
+    [
+      60,
+      64,
+      67
+    ]
+  ],
+  "description": "The ii-V-I progression in C."
+}

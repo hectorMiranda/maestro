@@ -1,0 +1,39 @@
+{
+  "id": "etude_gb_minor_pentatonic_descending",
+  "name": "Gb Minor Pentatonic — Descending Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Descending practice etude over the Gb minor pentatonic scale.",
+  "notes": [
+    [
+      78,
+      64,
+      360
+    ],
+    [
+      76,
+      64,
+      360
+    ],
+    [
+      73,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      69,
+      64,
+      360
+    ],
+    [
+      66,
+      64,
+      360
+    ]
+  ]
+}

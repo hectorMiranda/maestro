@@ -1,0 +1,23 @@
+{
+  "id": "gb_minor_pentatonic",
+  "name": "Gb Minor Pentatonic",
+  "root": "Gb",
+  "type": "minor_pentatonic",
+  "notes": [
+    66,
+    69,
+    71,
+    73,
+    76,
+    78
+  ],
+  "intervals": [
+    0,
+    3,
+    5,
+    7,
+    10,
+    12
+  ],
+  "description": "The Gb minor pentatonic scale."
+}

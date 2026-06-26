@@ -1,0 +1,27 @@
+{
+  "id": "db_dorian",
+  "name": "Db Dorian",
+  "root": "Db",
+  "type": "dorian",
+  "notes": [
+    61,
+    63,
+    64,
+    66,
+    68,
+    70,
+    71,
+    73
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    9,
+    10,
+    12
+  ],
+  "description": "The Db dorian scale."
+}

@@ -1,0 +1,23 @@
+{
+  "id": "db_major_pentatonic",
+  "name": "Db Major Pentatonic",
+  "root": "Db",
+  "type": "major_pentatonic",
+  "notes": [
+    61,
+    63,
+    65,
+    68,
+    70,
+    73
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    7,
+    9,
+    12
+  ],
+  "description": "The Db major pentatonic scale."
+}

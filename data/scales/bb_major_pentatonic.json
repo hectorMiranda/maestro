@@ -1,0 +1,23 @@
+{
+  "id": "bb_major_pentatonic",
+  "name": "Bb Major Pentatonic",
+  "root": "Bb",
+  "type": "major_pentatonic",
+  "notes": [
+    70,
+    72,
+    74,
+    77,
+    79,
+    82
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    7,
+    9,
+    12
+  ],
+  "description": "The Bb major pentatonic scale."
+}

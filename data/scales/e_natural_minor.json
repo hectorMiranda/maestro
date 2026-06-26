@@ -1,0 +1,27 @@
+{
+  "id": "e_natural_minor",
+  "name": "E Natural Minor",
+  "root": "E",
+  "type": "natural_minor",
+  "notes": [
+    64,
+    66,
+    67,
+    69,
+    71,
+    72,
+    74,
+    76
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    8,
+    10,
+    12
+  ],
+  "description": "The E natural minor scale."
+}

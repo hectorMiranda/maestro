@@ -1,0 +1,34 @@
+{
+  "id": "b_i_v_vi_iv",
+  "name": "B I-V-vi-IV",
+  "key": "B",
+  "numerals": [
+    "I",
+    "V",
+    "vi",
+    "IV"
+  ],
+  "chords": [
+    [
+      71,
+      75,
+      78
+    ],
+    [
+      78,
+      82,
+      85
+    ],
+    [
+      80,
+      83,
+      87
+    ],
+    [
+      76,
+      80,
+      83
+    ]
+  ],
+  "description": "The I-V-vi-IV progression in B."
+}

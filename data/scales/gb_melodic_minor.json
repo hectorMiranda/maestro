@@ -1,0 +1,27 @@
+{
+  "id": "gb_melodic_minor",
+  "name": "Gb Melodic Minor",
+  "root": "Gb",
+  "type": "melodic_minor",
+  "notes": [
+    66,
+    68,
+    69,
+    71,
+    73,
+    75,
+    77,
+    78
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    9,
+    11,
+    12
+  ],
+  "description": "The Gb melodic minor scale."
+}

@@ -1,0 +1,34 @@
+{
+  "id": "etude_c_major_arpeggio",
+  "name": "C Major — Arpeggio Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Arpeggio practice etude over the C major scale.",
+  "notes": [
+    [
+      60,
+      64,
+      360
+    ],
+    [
+      64,
+      64,
+      360
+    ],
+    [
+      67,
+      64,
+      360
+    ],
+    [
+      64,
+      64,
+      360
+    ],
+    [
+      60,
+      64,
+      360
+    ]
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "f_lydian",
+  "name": "F Lydian",
+  "root": "F",
+  "type": "lydian",
+  "notes": [
+    65,
+    67,
+    69,
+    71,
+    72,
+    74,
+    76,
+    77
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    6,
+    7,
+    9,
+    11,
+    12
+  ],
+  "description": "The F lydian scale."
+}

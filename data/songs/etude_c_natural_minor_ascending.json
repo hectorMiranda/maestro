@@ -1,0 +1,49 @@
+{
+  "id": "etude_c_natural_minor_ascending",
+  "name": "C Natural Minor — Ascending Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Ascending practice etude over the C natural minor scale.",
+  "notes": [
+    [
+      60,
+      64,
+      360
+    ],
+    [
+      62,
+      64,
+      360
+    ],
+    [
+      63,
+      64,
+      360
+    ],
+    [
+      65,
+      64,
+      360
+    ],
+    [
+      67,
+      64,
+      360
+    ],
+    [
+      68,
+      64,
+      360
+    ],
+    [
+      70,
+      64,
+      360
+    ],
+    [
+      72,
+      64,
+      360
+    ]
+  ]
+}

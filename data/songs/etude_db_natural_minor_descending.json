@@ -1,0 +1,49 @@
+{
+  "id": "etude_db_natural_minor_descending",
+  "name": "Db Natural Minor — Descending Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Descending practice etude over the Db natural minor scale.",
+  "notes": [
+    [
+      73,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      69,
+      64,
+      360
+    ],
+    [
+      68,
+      64,
+      360
+    ],
+    [
+      66,
+      64,
+      360
+    ],
+    [
+      64,
+      64,
+      360
+    ],
+    [
+      63,
+      64,
+      360
+    ],
+    [
+      61,
+      64,
+      360
+    ]
+  ]
+}

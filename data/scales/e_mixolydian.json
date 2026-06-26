@@ -1,0 +1,27 @@
+{
+  "id": "e_mixolydian",
+  "name": "E Mixolydian",
+  "root": "E",
+  "type": "mixolydian",
+  "notes": [
+    64,
+    66,
+    68,
+    69,
+    71,
+    73,
+    74,
+    76
+  ],
+  "intervals": [
+    0,
+    2,
+    4,
+    5,
+    7,
+    9,
+    10,
+    12
+  ],
+  "description": "The E mixolydian scale."
+}

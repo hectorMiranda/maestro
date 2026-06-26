@@ -1,0 +1,27 @@
+{
+  "id": "ab_dorian",
+  "name": "Ab Dorian",
+  "root": "Ab",
+  "type": "dorian",
+  "notes": [
+    68,
+    70,
+    71,
+    73,
+    75,
+    77,
+    78,
+    80
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    9,
+    10,
+    12
+  ],
+  "description": "The Ab dorian scale."
+}

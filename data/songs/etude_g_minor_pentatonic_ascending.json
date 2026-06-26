@@ -1,0 +1,39 @@
+{
+  "id": "etude_g_minor_pentatonic_ascending",
+  "name": "G Minor Pentatonic — Ascending Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Ascending practice etude over the G minor pentatonic scale.",
+  "notes": [
+    [
+      67,
+      64,
+      360
+    ],
+    [
+      70,
+      64,
+      360
+    ],
+    [
+      72,
+      64,
+      360
+    ],
+    [
+      74,
+      64,
+      360
+    ],
+    [
+      77,
+      64,
+      360
+    ],
+    [
+      79,
+      64,
+      360
+    ]
+  ]
+}

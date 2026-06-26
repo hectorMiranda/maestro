@@ -1,0 +1,34 @@
+{
+  "id": "etude_ab_dorian_arpeggio",
+  "name": "Ab Dorian — Arpeggio Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Arpeggio practice etude over the Ab dorian scale.",
+  "notes": [
+    [
+      68,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      75,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      68,
+      64,
+      360
+    ]
+  ]
+}

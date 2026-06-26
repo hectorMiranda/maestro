@@ -1,0 +1,49 @@
+{
+  "id": "etude_c_major_ascending",
+  "name": "C Major — Ascending Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Ascending practice etude over the C major scale.",
+  "notes": [
+    [
+      60,
+      64,
+      360
+    ],
+    [
+      62,
+      64,
+      360
+    ],
+    [
+      64,
+      64,
+      360
+    ],
+    [
+      65,
+      64,
+      360
+    ],
+    [
+      67,
+      64,
+      360
+    ],
+    [
+      69,
+      64,
+      360
+    ],
+    [
+      71,
+      64,
+      360
+    ],
+    [
+      72,
+      64,
+      360
+    ]
+  ]
+}

@@ -1,90 +1,54 @@
 # Maestro
 
-A Rust-based program for learning piano scales, chord progressions, and playing Mozart pieces through a MIDI piano.
+A terminal piano-learning companion written in Rust. Maestro teaches scales,
+chord progressions and short pieces, optionally driving a real MIDI device.
+
+## Quick start
+
+```sh
+# interactive menu
+cargo run
+
+# or use subcommands
+cargo run -- scales
+cargo run -- scale c_major --play
+cargo run -- chord c_i_iv_v
+cargo run -- songs
+cargo run -- play twinkle
+```
 
 ## Features
 
-- Lists all available MIDI input and output devices
-- Learn common piano scales (C Major, C Minor, G Major, A Minor)
-- Practice chord progressions (I-IV-V, ii-V-I, I-V-vi-IV)
-- Play Mozart pieces on a connected MIDI piano
-- Interactive terminal-based UI with piano keyboard visualization
-- Watch notes being played in real-time on the piano keyboard display
+- **Scales** — 12 keys × 12 scale types, loaded from `data/scales/`.
+- **Chord progressions** — common progressions in every key.
+- **Songs & etudes** — built-in melodies plus generated practice etudes.
+- **Users & progress** — local accounts (`register`/`login`) with per-user
+  practice tracking.
+- **Configuration** — tempo, default device and theme in a JSON config.
+- **MIDI** — live device output behind the optional `midi` feature; `.mid`
+  file import via `midly` is always available.
 
-## Prerequisites
+## Building
 
-- Rust and Cargo: [Install Rust](https://www.rust-lang.org/tools/install)
-- MIDI devices (required for MIDI playback)
+The default build needs no system libraries:
 
-## Installation
-
-1. Clone this repository or download the files
-2. Navigate to the project directory
-3. Build the program with Cargo:
-
-```
-cargo build --release
+```sh
+cargo build
+cargo test
 ```
 
-## Usage
+Live MIDI output needs ALSA dev headers on Linux:
 
-Run the program with:
-
+```sh
+sudo apt-get install -y libasound2-dev
+cargo run --features midi -- devices
 ```
-cargo run --release
-```
 
-### Main Menu Options
+## Documentation
 
-1. **List MIDI Devices** - Displays all available MIDI input and output devices
-2. **Learn Scales** - Practice common piano scales
-3. **Learn Chord Progressions** - Practice common chord progressions
-4. **Play Mozart Pieces** - Play Mozart compositions on connected MIDI devices
-5. **Quit** - Exit the program
-
-### Scale Learning
-
-In the scale learning mode:
-- Press SPACE to advance to the next note in the scale
-- Watch the piano keyboard visualization show each note
-- Press ESC to return to the scale menu
-
-### Chord Progression Learning
-
-In the chord progression learning mode:
-- Press SPACE to advance to the next chord in the progression
-- Watch the piano keyboard visualization show each chord
-- Press ESC to return to the chord progression menu
-
-### Mozart Pieces
-
-The program includes the following Mozart pieces:
-1. **Eine Kleine Nachtmusik** - First movement of Serenade No. 13 for strings in G major
-2. **Turkish March** - Rondo Alla Turca from Piano Sonata No. 11
-3. **Symphony No. 40** - First movement of Symphony No. 40 in G minor
-
-When playing a Mozart piece:
-- Notes are sent to your connected MIDI device
-- The piano keyboard visualization shows each note as it's played
-- Press ESC at any time to stop playback
-
-## MIDI Setup
-
-To play Mozart pieces:
-1. Connect your MIDI piano to your computer
-2. Select "Play Mozart Pieces" from the main menu
-3. Choose a piece to play
-4. Select the MIDI output device from the list
-5. Enjoy the music!
-
-## MIDI Note Reference
-
-In this program, MIDI notes are represented by their numeric values:
-- Middle C = 60 (C4)
-- C# = 61 (C#4)
-- D = 62 (D4)
-- And so on...
+See [`docs/`](docs/) for the CLI reference, architecture notes and a lesson
+page for every scale and chord progression.
 
 ## License
 
-This project is open source. 
+MIT — see [`LICENSE`](LICENSE).

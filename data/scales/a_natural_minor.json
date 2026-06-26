@@ -1,0 +1,27 @@
+{
+  "id": "a_natural_minor",
+  "name": "A Natural Minor",
+  "root": "A",
+  "type": "natural_minor",
+  "notes": [
+    69,
+    71,
+    72,
+    74,
+    76,
+    77,
+    79,
+    81
+  ],
+  "intervals": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    8,
+    10,
+    12
+  ],
+  "description": "The A natural minor scale."
+}

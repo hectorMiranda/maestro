@@ -1,0 +1,34 @@
+{
+  "id": "etude_db_major_arpeggio",
+  "name": "Db Major — Arpeggio Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Arpeggio practice etude over the Db major scale.",
+  "notes": [
+    [
+      61,
+      64,
+      360
+    ],
+    [
+      65,
+      64,
+      360
+    ],
+    [
+      68,
+      64,
+      360
+    ],
+    [
+      65,
+      64,
+      360
+    ],
+    [
+      61,
+      64,
+      360
+    ]
+  ]
+}

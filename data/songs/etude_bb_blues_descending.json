@@ -1,0 +1,44 @@
+{
+  "id": "etude_bb_blues_descending",
+  "name": "Bb Blues — Descending Etude",
+  "composer": "Maestro",
+  "tempo": 100,
+  "description": "Descending practice etude over the Bb blues scale.",
+  "notes": [
+    [
+      82,
+      64,
+      360
+    ],
+    [
+      80,
+      64,
+      360
+    ],
+    [
+      77,
+      64,
+      360
+    ],
+    [
+      76,
+      64,
+      360
+    ],
+    [
+      75,
+      64,
+      360
+    ],
+    [
+      73,
+      64,
+      360
+    ],
+    [
+      70,
+      64,
+      360
+    ]
+  ]
+}

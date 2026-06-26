@@ -1,0 +1,25 @@
+{
+  "id": "g_blues",
+  "name": "G Blues",
+  "root": "G",
+  "type": "blues",
+  "notes": [
+    67,
+    70,
+    72,
+    73,
+    74,
+    77,
+    79
+  ],
+  "intervals": [
+    0,
+    3,
+    5,
+    6,
+    7,
+    10,
+    12
+  ],
+  "description": "The G blues scale."
+}
