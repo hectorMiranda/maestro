@@ -1,0 +1,12 @@
+{
+  "id": "favorites",
+  "name": "Favorites",
+  "description": "A starter playlist — edit or make your own.",
+  "tracks": [
+    "amor_cortes",
+    "fur_elise",
+    "el_manicero",
+    "cielito_lindo",
+    "ode_to_joy"
+  ]
+}
