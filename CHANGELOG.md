@@ -2,6 +2,16 @@
 
 All notable changes to Maestro.
 
+## 0.8.0 — Modern interactive UI
+
+- Full-screen `crossterm` TUI: **arrow-key navigation**, scrolling lists that
+  stay on screen, and **type-to-search** filtering — no more typing ids/numbers.
+- **Esc stops a playing piece** mid-note (clean all-notes-off) via a new
+  interruptible `midi::MidiSink`; a "Now playing" screen animates the progress
+  and current note.
+- Menu items (scales, chords, songs) play to the auto-detected device.
+- Graceful fallback when there is no interactive terminal.
+
 ## 0.7.2 — Menu playback fixes
 
 - Menu items can now be picked by **number** (from the shown list) or by id —
