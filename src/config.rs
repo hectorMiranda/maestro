@@ -40,6 +40,9 @@ pub struct Config {
     pub base_octave: u8,
     #[serde(default = "crate::config::default_true")]
     pub color: bool,
+    /// Python interpreter for the YouTube-import pipeline (set by `maestro setup`).
+    #[serde(default)]
+    pub python_path: Option<String>,
 }
 
 pub(crate) fn default_true() -> bool {
@@ -54,6 +57,7 @@ impl Default for Config {
             theme: default_theme(),
             base_octave: default_octave(),
             color: true,
+            python_path: None,
         }
     }
 }
