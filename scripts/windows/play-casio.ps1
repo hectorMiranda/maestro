@@ -41,7 +41,20 @@ $data = Get-Content $file -Raw | ConvertFrom-Json
 Write-Host ("Playing '{0}' ({1}) -> device {2}: {3}" -f $data.name, $Kind, $Device, $devName)
 $out = Open-MidiOut $Device
 try {
-  if ($Kind -eq "songs") {
+  if ($Kind -eq "songs" -and $data.events -and $data.events.Count -gt 0) {
+    # Polyphonic arrangement: schedule timed note on/off actions.
+    $acts = New-Object System.Collections.Generic.List[object]
+    foreach ($e in $data.events) {
+      $acts.Add([pscustomobject]@{ t=[int]$e.start; on=1; n=[int]$e.note; v=[int]$e.vel })
+      $acts.Add([pscustomobject]@{ t=[int]$e.start + [int]$e.dur; on=0; n=[int]$e.note; v=0 })
+    }
+    $acts = $acts | Sort-Object t, on
+    $clock = 0
+    foreach ($a in $acts) {
+      if ($a.t -gt $clock) { Start-Sleep -Milliseconds ($a.t - $clock); $clock = $a.t }
+      if ($a.on -eq 1) { Send-NoteOn $out $a.n $a.v } else { Send-NoteOff $out $a.n }
+    }
+  } elseif ($Kind -eq "songs") {
     foreach ($ev in $data.notes) {
       $n=[int]$ev[0]; $v=[int]$ev[1]; $d=[int]$ev[2]
       if ($v -gt 0) { Send-NoteOn $out $n $v }
