@@ -5,7 +5,11 @@
 //! search, scrolling lists that stay on screen, and Esc to stop a playing
 //! piece. Falls back to a message when there is no interactive terminal.
 
-use crate::{data, keyboard, midi, model::Song};
+use crate::{
+    config::Config,
+    data, keyboard, midi,
+    model::{NoteEvent, Song},
+};
 use anyhow::Result;
 use crossterm::{
     cursor::{Hide, MoveTo, Show},
@@ -27,6 +31,59 @@ enum Playable {
     Notes(Vec<(u8, u8, u32)>),
     /// A chord progression: each inner vec sounds together.
     Chords(Vec<Vec<u8>>),
+    /// A polyphonic arrangement (overlapping notes), e.g. a full song.
+    Timeline(Vec<NoteEvent>),
+}
+
+/// What a polling step returned (Esc / speed keys during playback).
+enum Tick {
+    Continue,
+    Stop,
+    Faster,
+    Slower,
+}
+
+/// Build a unified, time-stamped event list from any [`Playable`].
+fn entry_timeline(play: &Playable) -> Vec<NoteEvent> {
+    match play {
+        Playable::Timeline(evs) => {
+            let mut e = evs.clone();
+            e.sort_by_key(|x| x.start_ms);
+            e
+        }
+        Playable::Notes(seq) => {
+            let mut t = 0u32;
+            let mut out = Vec::new();
+            for (note, vel, dur) in seq {
+                if *vel > 0 {
+                    out.push(NoteEvent {
+                        note: *note,
+                        start_ms: t,
+                        dur_ms: *dur,
+                        vel: *vel,
+                    });
+                }
+                t += dur;
+            }
+            out
+        }
+        Playable::Chords(chords) => {
+            let mut t = 0u32;
+            let mut out = Vec::new();
+            for chord in chords {
+                for n in chord {
+                    out.push(NoteEvent {
+                        note: *n,
+                        start_ms: t,
+                        dur_ms: 750,
+                        vel: 72,
+                    });
+                }
+                t += 750 + 140;
+            }
+            out
+        }
+    }
 }
 
 /// One browsable, playable item.
@@ -36,15 +93,26 @@ struct Entry {
     play: Playable,
 }
 
-/// Entry point: detect a device, chime, then run the UI.
+/// A human label for the currently-selected output device.
+fn device_label(device: Option<usize>) -> String {
+    if !midi::live_supported() {
+        return "MIDI off — build with --features midi for sound".into();
+    }
+    let outputs = midi::output_devices().unwrap_or_default();
+    match device {
+        Some(i) => match outputs.get(i) {
+            Some(name) => format!("🎹 {name}  (output {i})"),
+            None => format!("output {i} (not found)"),
+        },
+        None => "no output selected — open MIDI Devices to pick your keyboard".into(),
+    }
+}
+
+/// Entry point: pick a device (saved config, else auto-detect a CASIO), chime,
+/// then run the UI.
 pub fn run() -> Result<()> {
-    let detected = midi::auto_output("casio");
-    let device = detected.as_ref().map(|(i, _)| *i);
-    let status = match &detected {
-        Some((i, name)) => format!("🎹 {name}  (output {i})"),
-        None if midi::live_supported() => "no MIDI device — connect your keyboard".into(),
-        None => "MIDI off — build with --features midi for sound".into(),
-    };
+    let configured = Config::load().ok().and_then(|c| c.default_midi_device);
+    let device = configured.or_else(|| midi::auto_output("casio").map(|(i, _)| i));
     let _ = midi::play_chime(device);
 
     if enable_raw_mode().is_err() {
@@ -57,7 +125,7 @@ pub fn run() -> Result<()> {
     let _ = queue!(out, EnterAlternateScreen, Hide);
     let _ = out.flush();
 
-    let result = app_loop(&mut out, device, &status);
+    let result = app_loop(&mut out, device);
 
     let _ = queue!(out, Show, LeaveAlternateScreen);
     let _ = out.flush();
@@ -66,7 +134,7 @@ pub fn run() -> Result<()> {
     result
 }
 
-fn app_loop(out: &mut Stdout, device: Option<usize>, status: &str) -> Result<()> {
+fn app_loop(out: &mut Stdout, mut device: Option<usize>) -> Result<()> {
     let options = [
         "Scales",
         "Chord Progressions",
@@ -77,10 +145,11 @@ fn app_loop(out: &mut Stdout, device: Option<usize>, status: &str) -> Result<()>
     ];
     let mut sel = 0usize;
     loop {
+        let status = device_label(device);
         render(
             out,
             "🎹  Maestro",
-            status,
+            &status,
             &options.iter().map(|s| s.to_string()).collect::<Vec<_>>(),
             sel,
             0,
@@ -101,7 +170,7 @@ fn app_loop(out: &mut Stdout, device: Option<usize>, status: &str) -> Result<()>
                 1 => browse(out, "Chord Progressions", &chord_entries()?, device)?,
                 2 => browse(out, "Songs & Etudes", &song_entries()?, device)?,
                 3 => playlists_screen(out, device)?,
-                4 => devices_screen(out)?,
+                4 => devices_screen(out, &mut device)?,
                 _ => break,
             },
             _ => {}
@@ -169,7 +238,7 @@ fn browse(out: &mut Stdout, title: &str, entries: &[Entry], device: Option<usize
             KeyCode::End => sel = filtered.len().saturating_sub(1),
             KeyCode::Enter => {
                 if let Some(entry) = filtered.get(sel) {
-                    play_entry(out, entry, device, "Esc to stop")?;
+                    play_entry(out, entry, device, "Esc stop   +/- speed")?;
                 }
             }
             KeyCode::Esc => break,
@@ -190,22 +259,16 @@ fn browse(out: &mut Stdout, title: &str, entries: &[Entry], device: Option<usize
     Ok(())
 }
 
-/// The lowest and highest sounding notes of an entry (for the keyboard span).
-fn note_range(entry: &Entry) -> (u8, u8) {
-    let notes: Vec<u8> = match &entry.play {
-        Playable::Notes(ns) => ns
-            .iter()
-            .filter(|(_, v, _)| *v > 0)
-            .map(|(n, _, _)| *n)
-            .collect(),
-        Playable::Chords(cs) => cs.iter().flatten().copied().collect(),
-    };
-    let lo = notes.iter().copied().min().unwrap_or(60);
-    let hi = notes.iter().copied().max().unwrap_or(72);
+/// The lowest and highest notes across a timeline (for the keyboard span).
+fn timeline_range(events: &[NoteEvent]) -> (u8, u8) {
+    let lo = events.iter().map(|e| e.note).min().unwrap_or(60);
+    let hi = events.iter().map(|e| e.note).max().unwrap_or(72);
     (lo, hi)
 }
 
-/// Play an entry, animating a "now playing" screen with a live keyboard.
+/// Play an entry with a polyphonic scheduler: a clock advances in song-time,
+/// notes turn on/off at their event times, the keyboard shows every key that
+/// is currently down, and `+`/`-` change the speed live.
 /// Returns `true` if the user pressed Esc (so a playlist can stop).
 fn play_entry(
     out: &mut Stdout,
@@ -213,59 +276,61 @@ fn play_entry(
     device: Option<usize>,
     footer: &str,
 ) -> Result<bool> {
+    let events = entry_timeline(&entry.play);
+    if events.is_empty() {
+        return Ok(false);
+    }
+    let (lo, hi) = timeline_range(&events);
+    let total: u32 = events
+        .iter()
+        .map(|e| e.start_ms + e.dur_ms)
+        .max()
+        .unwrap_or(0);
     let mut sink = midi::MidiSink::open(device)?;
-    let (lo, hi) = note_range(entry);
+
+    const STEP: u32 = 25; // song-time milliseconds per frame
+    let mut speed: f32 = 1.0;
+    let mut t: u32 = 0;
+    let mut idx = 0usize; // next event to start
+    let mut held: Vec<(u32, u8)> = Vec::new(); // (end_ms, note)
     let mut interrupted = false;
-    match &entry.play {
-        Playable::Notes(notes) => {
-            let total = notes.len();
-            for (i, (note, vel, dur)) in notes.iter().enumerate() {
-                let active: BTreeSet<u8> = if *vel > 0 {
-                    BTreeSet::from([*note])
-                } else {
-                    BTreeSet::new()
-                };
-                now_playing(out, &entry.label, i + 1, total, &active, lo, hi, footer)?;
-                if let Some(s) = sink.as_mut() {
-                    if *vel > 0 {
-                        s.note_on(*note, *vel);
-                    }
-                }
-                let stop = wait_or_esc(*dur)?;
-                if let Some(s) = sink.as_mut() {
-                    if *vel > 0 {
-                        s.note_off(*note);
-                    }
-                }
-                if stop {
-                    interrupted = true;
-                    break;
-                }
+
+    while t <= total {
+        // Start newly-due notes.
+        while idx < events.len() && events[idx].start_ms <= t {
+            let e = &events[idx];
+            if let Some(s) = sink.as_mut() {
+                s.note_on(e.note, e.vel);
             }
+            held.push((e.start_ms + e.dur_ms, e.note));
+            idx += 1;
         }
-        Playable::Chords(chords) => {
-            let total = chords.len();
-            for (i, chord) in chords.iter().enumerate() {
-                let active: BTreeSet<u8> = chord.iter().copied().collect();
-                now_playing(out, &entry.label, i + 1, total, &active, lo, hi, footer)?;
+        // Release finished notes.
+        held.retain(|&(end, note)| {
+            if end <= t {
                 if let Some(s) = sink.as_mut() {
-                    for n in chord {
-                        s.note_on(*n, 72);
-                    }
+                    s.note_off(note);
                 }
-                if wait_or_esc(750)? || wait_or_esc(140)? {
-                    interrupted = true;
-                }
-                if let Some(s) = sink.as_mut() {
-                    for n in chord {
-                        s.note_off(*n);
-                    }
-                }
-                if interrupted {
-                    break;
-                }
+                false
+            } else {
+                true
             }
+        });
+
+        let active: BTreeSet<u8> = held.iter().map(|&(_, n)| n).collect();
+        now_playing(out, &entry.label, t, total, &active, lo, hi, speed, footer)?;
+
+        let wall = ((STEP as f32) / speed).round() as u32;
+        match poll_step(wall)? {
+            Tick::Stop => {
+                interrupted = true;
+                break;
+            }
+            Tick::Faster => speed = (speed * 1.25).min(3.0),
+            Tick::Slower => speed = (speed / 1.25).max(0.25),
+            Tick::Continue => {}
         }
+        t += STEP;
     }
     if let Some(s) = sink.as_mut() {
         s.all_off();
@@ -273,19 +338,21 @@ fn play_entry(
     Ok(interrupted)
 }
 
-/// Sleep up to `ms`, returning true if Esc (or Ctrl-C) was pressed.
-fn wait_or_esc(ms: u32) -> Result<bool> {
-    let mut remaining = ms as i64;
+/// Wait roughly `ms`, polling for Esc (stop) and `+`/`-` (speed) keys.
+fn poll_step(ms: u32) -> Result<Tick> {
+    let mut remaining = ms.max(1) as i64;
     while remaining > 0 {
-        let step = remaining.min(20);
+        let step = remaining.min(15);
         if event::poll(Duration::from_millis(step as u64))? {
             if let Event::Key(key) = event::read()? {
                 if key.kind != KeyEventKind::Release {
                     match key.code {
-                        KeyCode::Esc => return Ok(true),
+                        KeyCode::Esc => return Ok(Tick::Stop),
                         KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                            return Ok(true)
+                            return Ok(Tick::Stop)
                         }
+                        KeyCode::Char('+') | KeyCode::Char('=') => return Ok(Tick::Faster),
+                        KeyCode::Char('-') | KeyCode::Char('_') => return Ok(Tick::Slower),
                         _ => {}
                     }
                 }
@@ -293,48 +360,90 @@ fn wait_or_esc(ms: u32) -> Result<bool> {
         }
         remaining -= step;
     }
-    Ok(false)
+    Ok(Tick::Continue)
 }
 
-fn devices_screen(out: &mut Stdout) -> Result<()> {
+/// Pick the MIDI **output** device used for playback, and remember it.
+fn devices_screen(out: &mut Stdout, device: &mut Option<usize>) -> Result<()> {
     let outputs = midi::output_devices()?;
     let inputs = midi::input_devices()?;
-    let mut lines = Vec::new();
-    lines.push("Outputs:".to_string());
     if outputs.is_empty() {
-        lines.push("  (none)".into());
+        let mut lines = vec!["No MIDI output devices found.".to_string()];
+        if !midi::live_supported() {
+            lines.push(String::new());
+            lines.push("Built without the `midi` feature — rebuild with --features midi.".into());
+        } else {
+            lines.push("Connect your keyboard and reopen this screen.".into());
+        }
+        loop {
+            render(out, "MIDI Devices", "", &lines, usize::MAX, 0, "Esc back")?;
+            if let Event::Key(k) = event::read()? {
+                if k.kind != KeyEventKind::Release
+                    && matches!(k.code, KeyCode::Esc | KeyCode::Enter | KeyCode::Char('q'))
+                {
+                    break;
+                }
+            }
+        }
+        return Ok(());
     }
-    for (i, d) in outputs.iter().enumerate() {
-        lines.push(format!("  {i}: {d}"));
-    }
-    lines.push(String::new());
-    lines.push("Inputs:".to_string());
-    if inputs.is_empty() {
-        lines.push("  (none)".into());
-    }
-    for (i, d) in inputs.iter().enumerate() {
-        lines.push(format!("  {i}: {d}"));
-    }
-    if !midi::live_supported() {
-        lines.push(String::new());
-        lines.push("(built without the `midi` feature — rebuild with --features midi)".into());
-    }
+
+    let mut sel = device.unwrap_or(0).min(outputs.len() - 1);
+    let mut note = String::new();
     loop {
+        let mut labels: Vec<String> = outputs
+            .iter()
+            .enumerate()
+            .map(|(i, d)| {
+                let marker = if Some(i) == *device {
+                    " ◀ current"
+                } else {
+                    ""
+                };
+                format!("{i}: {d}{marker}")
+            })
+            .collect();
+        if !inputs.is_empty() {
+            labels.push(String::new());
+            labels.push("Inputs (for `learn`):".into());
+            for (i, d) in inputs.iter().enumerate() {
+                labels.push(format!("  {i}: {d}"));
+            }
+        }
+        let subtitle = if note.is_empty() {
+            "Pick the output for playback (e.g. your CASIO)".to_string()
+        } else {
+            note.clone()
+        };
         render(
             out,
             "MIDI Devices",
-            "",
-            &lines,
-            usize::MAX,
+            &subtitle,
+            &labels,
+            sel,
             0,
-            "Esc/Enter back",
+            "↑/↓ move   Enter select & save   Esc back",
         )?;
-        if let Event::Key(key) = event::read()? {
-            if key.kind != KeyEventKind::Release
-                && matches!(key.code, KeyCode::Esc | KeyCode::Enter | KeyCode::Char('q'))
-            {
-                break;
+        let Event::Key(key) = event::read()? else {
+            continue;
+        };
+        if key.kind == KeyEventKind::Release {
+            continue;
+        }
+        match key.code {
+            KeyCode::Up => sel = sel.saturating_sub(1),
+            KeyCode::Down => sel = (sel + 1).min(outputs.len() - 1),
+            KeyCode::Enter if sel < outputs.len() => {
+                *device = Some(sel);
+                // Persist so it's remembered next launch.
+                if let Ok(mut cfg) = Config::load() {
+                    cfg.default_midi_device = Some(sel);
+                    let _ = cfg.save();
+                }
+                note = format!("✓ playback set to {}: {}", sel, outputs[sel]);
             }
+            KeyCode::Esc | KeyCode::Char('q') => break,
+            _ => {}
         }
     }
     Ok(())
@@ -344,7 +453,7 @@ fn song_to_entry(s: &Song) -> Entry {
     Entry {
         label: format!("{}   [{}]", crate::songs::summary(s), s.id),
         id: s.id.clone(),
-        play: Playable::Notes(s.notes.clone()),
+        play: Playable::Timeline(s.timeline()),
     }
 }
 
@@ -414,7 +523,7 @@ fn play_playlist(
     let total = songs.len();
     for (i, song) in songs.iter().enumerate() {
         let entry = song_to_entry(song);
-        let footer = format!("track {}/{}   Esc to stop", i + 1, total);
+        let footer = format!("track {}/{}   Esc stop   +/- speed", i + 1, total);
         if play_entry(out, &entry, device, &footer)? {
             break; // Esc stops the playlist
         }
@@ -498,20 +607,26 @@ fn render(
     Ok(())
 }
 
+fn fmt_time(ms: u32) -> String {
+    let s = ms / 1000;
+    format!("{}:{:02}", s / 60, s % 60)
+}
+
 #[allow(clippy::too_many_arguments)]
 fn now_playing(
     out: &mut Stdout,
     label: &str,
-    pos: usize,
-    total: usize,
+    elapsed_ms: u32,
+    total_ms: u32,
     active: &BTreeSet<u8>,
     lo: u8,
     hi: u8,
+    speed: f32,
     footer: &str,
 ) -> Result<()> {
     let (cols, rows) = term_size();
-    let bar_w = cols.saturating_sub(12).max(1);
-    let filled = (pos * bar_w) / total.max(1);
+    let bar_w = cols.saturating_sub(28).max(1);
+    let filled = ((elapsed_ms as u64 * bar_w as u64) / (total_ms.max(1) as u64)) as usize;
     let bar: String = "█".repeat(filled) + &"░".repeat(bar_w.saturating_sub(filled));
     let note_line = match active.iter().next() {
         Some(_) if active.len() > 1 => {
@@ -521,6 +636,13 @@ fn now_playing(
         Some(n) => format!("♪  {}", crate::notes::note_name(*n)),
         None => "♪  —".to_string(),
     };
+    let status = format!(
+        "{}  {} / {}   speed x{:.2}",
+        bar,
+        fmt_time(elapsed_ms),
+        fmt_time(total_ms),
+        speed
+    );
     queue!(
         out,
         Clear(ClearType::All),
@@ -533,7 +655,7 @@ fn now_playing(
         MoveTo(0, 2),
         Print(truncate(&note_line, cols)),
         MoveTo(0, 3),
-        Print(truncate(&format!("{bar}  {pos}/{total}"), cols)),
+        Print(truncate(&status, cols)),
     )?;
 
     // Live keyboard, vertically centred-ish in the remaining space.
@@ -617,8 +739,8 @@ fn song_entries() -> Result<Vec<Entry>> {
         .into_iter()
         .map(|s: Song| Entry {
             label: format!("{}   [{}]", crate::songs::summary(&s), s.id),
+            play: Playable::Timeline(s.timeline()),
             id: s.id,
-            play: Playable::Notes(s.notes),
         })
         .collect())
 }

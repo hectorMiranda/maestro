@@ -149,6 +149,7 @@ mod tests {
             description: String::new(),
             // includes a rest (vel 0) which must be skipped
             notes: vec![(60, 64, 400), (0, 0, 200), (62, 64, 400), (64, 64, 400)],
+            events: Vec::new(),
         }
     }
 

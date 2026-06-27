@@ -4,7 +4,7 @@
 //! `midir`/`rodio`, which need system audio libraries). File parsing via
 //! `midly` is pure-Rust and always available.
 
-use crate::model::Song;
+use crate::model::{NoteEvent, Song};
 use anyhow::{Context, Result};
 
 /// List available MIDI output device names.
@@ -63,6 +63,61 @@ pub fn play_song(song: &Song, device: Option<usize>) -> Result<()> {
             song.name,
             song.notes.len(),
             song.duration_ms()
+        );
+        Ok(())
+    }
+}
+
+/// Play a polyphonic timeline (overlapping notes) at `speed` (1.0 = normal,
+/// <1 slower, >1 faster). Handles both monophonic and full arrangements.
+pub fn play_timeline(events: &[NoteEvent], device: Option<usize>, speed: f32) -> Result<()> {
+    let speed = if speed <= 0.0 { 1.0 } else { speed };
+    #[cfg(feature = "midi")]
+    {
+        use midir::MidiOutput;
+        use std::{thread, time::Duration};
+        // Flatten to timed on/off actions; at equal times, off before on.
+        let mut acts: Vec<(u32, bool, u8, u8)> = Vec::new();
+        for e in events {
+            acts.push((e.start_ms, true, e.note, e.vel));
+            acts.push((e.start_ms + e.dur_ms, false, e.note, 0));
+        }
+        acts.sort_by(|a, b| a.0.cmp(&b.0).then(a.1.cmp(&b.1)));
+        let out = MidiOutput::new("maestro")?;
+        let ports = out.ports();
+        let idx = device.unwrap_or(0);
+        let port = ports.get(idx).context("no such MIDI output device")?;
+        let mut conn = out
+            .connect(port, "maestro-timeline")
+            .map_err(|e| anyhow::anyhow!("MIDI connect failed: {e}"))?;
+        let mut clock = 0u32;
+        for (time, on, note, vel) in acts {
+            if time > clock {
+                let dt = ((time - clock) as f32 / speed).round() as u64;
+                thread::sleep(Duration::from_millis(dt));
+                clock = time;
+            }
+            if on {
+                let _ = conn.send(&[0x90, note, vel]);
+            } else {
+                let _ = conn.send(&[0x80, note, 0]);
+            }
+        }
+        Ok(())
+    }
+    #[cfg(not(feature = "midi"))]
+    {
+        let _ = device;
+        let total = events
+            .iter()
+            .map(|e| e.start_ms + e.dur_ms)
+            .max()
+            .unwrap_or(0);
+        println!(
+            "(no MIDI feature) {} events, {} ms (speed x{:.2})",
+            events.len(),
+            total,
+            speed
         );
         Ok(())
     }
@@ -219,6 +274,7 @@ pub fn load_midi_file(path: &str) -> Result<Song> {
         tempo: 120,
         description: format!("Imported from {path}"),
         notes,
+        events: Vec::new(),
     })
 }
 
@@ -483,6 +539,7 @@ fn single_note_song(note: u8) -> crate::model::Song {
         tempo: 120,
         description: String::new(),
         notes: vec![(note, 80, 180)],
+        events: Vec::new(),
     }
 }
 
