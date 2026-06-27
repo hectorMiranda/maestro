@@ -91,6 +91,15 @@ pub enum Command {
         #[arg(long, value_name = "ID")]
         save: Option<String>,
     },
+    /// Set up the Python environment for YouTube import (creates a venv + deps).
+    Setup {
+        /// Also install basic-pitch for both-hands transcription (heavier).
+        #[arg(long)]
+        full: bool,
+        /// Interpreter to build the venv from (e.g. a Python 3.11). Auto-detected if omitted.
+        #[arg(long)]
+        python: Option<String>,
+    },
     /// Register a new local user.
     Register { username: String },
     /// Sign in as a user.
@@ -179,6 +188,7 @@ pub fn run(cli: Cli) -> Result<()> {
             octave_any,
         } => learn(&id, input, output, octave_any),
         Command::Import { path, play, save } => import(&path, play, save),
+        Command::Setup { full, python } => setup(full, python),
         Command::Register { username } => register(&username),
         Command::Login { username } => login(&username),
         Command::Logout => logout(),
@@ -478,25 +488,24 @@ fn import_url(url: &str, play_it: bool, save: Option<String>) -> Result<()> {
             .arg(&id)
             .status()
     };
-    // Prefer an explicit interpreter (e.g. a Python 3.11 venv that has the
-    // transcription deps), since the system `python` may be too new for them.
+    // Interpreter precedence: MAESTRO_PYTHON env > saved config (from `setup`)
+    // > system python. The system one may be too new for the transcription deps.
+    let configured = Config::load().ok().and_then(|c| c.python_path);
     let status = if let Ok(py) = std::env::var("MAESTRO_PYTHON") {
         run(&py).with_context(|| format!("MAESTRO_PYTHON='{py}' could not be run"))?
+    } else if let Some(py) = configured {
+        run(&py).with_context(|| {
+            format!("saved Python '{py}' could not be run (re-run `maestro setup`)")
+        })?
     } else {
         match run("python3") {
             Ok(s) => s,
-            Err(_) => run("python")
-                .context("python not found — install Python 3.11 and set MAESTRO_PYTHON to it")?,
+            Err(_) => run("python").context("python not found — run `maestro setup` first")?,
         }
     };
     if !status.success() {
         bail!(
-            "import pipeline failed. The audio/ML deps need Python 3.11 (3.13+/3.14 lack wheels).\n\
-             Set up once and point Maestro at it:\n  \
-             py -3.11 -m venv maestro-venv\n  \
-             maestro-venv\\Scripts\\python -m pip install -U pip setuptools wheel\n  \
-             maestro-venv\\Scripts\\python -m pip install yt-dlp imageio-ffmpeg librosa basic-pitch onnxruntime\n  \
-             set MAESTRO_PYTHON=...\\maestro-venv\\Scripts\\python.exe"
+            "import pipeline failed. Run `maestro setup` to install the deps (needs Python 3.11)."
         );
     }
     let song = data::find_song(&id)?
@@ -508,6 +517,126 @@ fn import_url(url: &str, play_it: bool, save: Option<String>) -> Result<()> {
     if play_it {
         midi::play_timeline(&song.timeline(), None, 1.0)?;
     }
+    Ok(())
+}
+
+/// Path to the venv's python interpreter.
+fn venv_python(venv: &std::path::Path) -> std::path::PathBuf {
+    if cfg!(windows) {
+        venv.join("Scripts").join("python.exe")
+    } else {
+        venv.join("bin").join("python")
+    }
+}
+
+/// Find a Python suitable for building the venv (3.10–3.12 have the wheels).
+fn find_seed_python(explicit: Option<String>) -> Result<Vec<String>> {
+    let mut candidates: Vec<Vec<String>> = Vec::new();
+    if let Some(p) = explicit {
+        candidates.push(vec![p]); // trust an explicit choice, any version
+        return verify_first(candidates, true);
+    }
+    for v in ["3.11", "3.12", "3.10"] {
+        candidates.push(vec![format!("python{v}")]);
+        if cfg!(windows) {
+            candidates.push(vec!["py".into(), format!("-{v}")]);
+        }
+    }
+    verify_first(candidates, false)
+}
+
+fn verify_first(candidates: Vec<Vec<String>>, any_version: bool) -> Result<Vec<String>> {
+    use std::process::Command;
+    for c in candidates {
+        let out = Command::new(&c[0]).args(&c[1..]).arg("--version").output();
+        if let Ok(out) = out {
+            if out.status.success() {
+                let ver = format!(
+                    "{}{}",
+                    String::from_utf8_lossy(&out.stdout),
+                    String::from_utf8_lossy(&out.stderr)
+                );
+                if any_version
+                    || ver.contains("3.10")
+                    || ver.contains("3.11")
+                    || ver.contains("3.12")
+                {
+                    return Ok(c);
+                }
+            }
+        }
+    }
+    bail!(
+        "no suitable Python found. Install Python 3.11 \
+         (Windows: winget install Python.Python.3.11) then re-run `maestro setup`, \
+         or pass --python <path-to-python3.11>."
+    )
+}
+
+fn run_py(py: &str, args: &[&str]) -> Result<()> {
+    use std::process::Command;
+    let status = Command::new(py)
+        .args(args)
+        .status()
+        .with_context(|| format!("failed to run {py}"))?;
+    if !status.success() {
+        bail!("command failed: {py} {}", args.join(" "));
+    }
+    Ok(())
+}
+
+/// `maestro setup` — create a Python venv with the transcription deps and
+/// remember it for `maestro import <url>`.
+fn setup(full: bool, python: Option<String>) -> Result<()> {
+    use std::process::Command;
+    let seed = find_seed_python(python)?;
+    let venv = crate::config::state_dir().join("yt-venv");
+    println!(
+        "Using {} to create a venv at {} …",
+        seed.join(" "),
+        venv.display()
+    );
+    let ok = Command::new(&seed[0])
+        .args(&seed[1..])
+        .arg("-m")
+        .arg("venv")
+        .arg(&venv)
+        .status()
+        .context("failed to launch Python to create the venv")?
+        .success();
+    if !ok {
+        bail!("could not create the venv (is the Python venv module available?)");
+    }
+
+    let py = venv_python(&venv);
+    let py = py.to_string_lossy().to_string();
+    println!("Upgrading pip toolchain …");
+    run_py(
+        &py,
+        &["-m", "pip", "install", "-U", "pip", "setuptools", "wheel"],
+    )?;
+
+    let mut pkgs = vec!["yt-dlp", "imageio-ffmpeg", "librosa"];
+    if full {
+        pkgs.push("basic-pitch");
+        pkgs.push("onnxruntime");
+    }
+    println!(
+        "Installing {} (this can take a few minutes) …",
+        pkgs.join(" ")
+    );
+    let mut args = vec!["-m", "pip", "install"];
+    args.extend(pkgs);
+    run_py(&py, &args)?;
+
+    let mut cfg = Config::load()?;
+    cfg.python_path = Some(py.clone());
+    cfg.save()?;
+    println!("\n✓ Setup complete. Saved interpreter: {py}");
+    if !full {
+        println!("(melody-only. For both hands later: maestro setup --full)");
+    }
+    println!("Now try: maestro import \"<youtube-url>\" --save my_song");
     Ok(())
 }
 
