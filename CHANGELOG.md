@@ -2,6 +2,13 @@
 
 All notable changes to Maestro.
 
+## 0.12.1 — YouTube import on any Python
+
+- `MAESTRO_PYTHON` selects the interpreter for the import pipeline, so you can
+  keep the transcription deps in a Python 3.11 venv even if your system Python
+  is 3.13/3.14 (which lack librosa/basic-pitch wheels).
+- Clearer setup instructions on failure (3.11 venv + onnxruntime).
+
 ## 0.12.0 — Import from a YouTube URL
 
 - `maestro import "<youtube-url>" --save <id>` downloads the audio, transcribes

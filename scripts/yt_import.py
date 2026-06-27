@@ -43,7 +43,10 @@ def download_audio(url, tmp):
     try:
         import yt_dlp
     except ImportError:
-        log("ERROR: yt-dlp is not installed. Run: pip install yt-dlp imageio-ffmpeg librosa")
+        log("ERROR: dependencies missing. Use Python 3.11 and:")
+        log("  pip install -U pip setuptools wheel")
+        log("  pip install yt-dlp imageio-ffmpeg librosa basic-pitch onnxruntime")
+        log("then set MAESTRO_PYTHON to that interpreter.")
         sys.exit(2)
     ff = None
     try:

@@ -478,13 +478,26 @@ fn import_url(url: &str, play_it: bool, save: Option<String>) -> Result<()> {
             .arg(&id)
             .status()
     };
-    let status = match run("python3") {
-        Ok(s) => s,
-        Err(_) => run("python")
-            .context("python not found — install Python 3 and the deps in scripts/yt_import.py")?,
+    // Prefer an explicit interpreter (e.g. a Python 3.11 venv that has the
+    // transcription deps), since the system `python` may be too new for them.
+    let status = if let Ok(py) = std::env::var("MAESTRO_PYTHON") {
+        run(&py).with_context(|| format!("MAESTRO_PYTHON='{py}' could not be run"))?
+    } else {
+        match run("python3") {
+            Ok(s) => s,
+            Err(_) => run("python")
+                .context("python not found — install Python 3.11 and set MAESTRO_PYTHON to it")?,
+        }
     };
     if !status.success() {
-        bail!("import pipeline failed. Install deps: pip install yt-dlp imageio-ffmpeg librosa basic-pitch");
+        bail!(
+            "import pipeline failed. The audio/ML deps need Python 3.11 (3.13+/3.14 lack wheels).\n\
+             Set up once and point Maestro at it:\n  \
+             py -3.11 -m venv maestro-venv\n  \
+             maestro-venv\\Scripts\\python -m pip install -U pip setuptools wheel\n  \
+             maestro-venv\\Scripts\\python -m pip install yt-dlp imageio-ffmpeg librosa basic-pitch onnxruntime\n  \
+             set MAESTRO_PYTHON=...\\maestro-venv\\Scripts\\python.exe"
+        );
     }
     let song = data::find_song(&id)?
         .with_context(|| format!("imported song '{id}' not found in catalogue"))?;

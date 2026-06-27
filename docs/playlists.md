@@ -44,20 +44,41 @@ maestro play my_song --device 3        # hear it on your keyboard
 maestro learn my_song                  # practice it
 ```
 
-This runs the bundled pipeline (`scripts/yt_import.py`). Install its tools once:
+This runs the bundled pipeline (`scripts/yt_import.py`).
+
+> **Use Python 3.11.** The audio/ML libraries (librosa, basic-pitch) don't have
+> wheels for Python 3.13+/3.14 yet, so install them in a 3.11 environment and
+> point Maestro at that interpreter with `MAESTRO_PYTHON`.
+
+### Windows
+
+```powershell
+# install Python 3.11 once:  winget install Python.Python.3.11
+py -3.11 -m venv maestro-venv
+maestro-venv\Scripts\python -m pip install -U pip setuptools wheel
+# full, both hands (uses onnxruntime, no TensorFlow needed):
+maestro-venv\Scripts\python -m pip install yt-dlp imageio-ffmpeg librosa basic-pitch onnxruntime
+# ...or melody only (lighter):
+#   maestro-venv\Scripts\python -m pip install yt-dlp imageio-ffmpeg librosa
+$env:MAESTRO_PYTHON = "$PWD\maestro-venv\Scripts\python.exe"
+cargo run --features midi -- import "https://www.youtube.com/watch?v=..." --save my_song
+```
+
+### macOS / Linux
 
 ```sh
-# full, both-hands transcription:
-pip install yt-dlp imageio-ffmpeg librosa basic-pitch
-# or melody-only (lighter):
-pip install yt-dlp imageio-ffmpeg librosa
+python3.11 -m venv maestro-venv
+maestro-venv/bin/python -m pip install -U pip setuptools wheel
+maestro-venv/bin/python -m pip install yt-dlp imageio-ffmpeg librosa basic-pitch onnxruntime
+export MAESTRO_PYTHON="$PWD/maestro-venv/bin/python"
+maestro import "https://www.youtube.com/watch?v=..." --save my_song
 ```
 
 The pipeline auto-detects the key and quantizes the result. Auto-transcription
 is approximate — expect some artifacts — but it captures the real pitches,
-onsets and durations from the recording so you can learn any song you like.
+onsets and durations so you can learn any song you like.
 
-You can also point Maestro at the script elsewhere with `MAESTRO_YT_IMPORT=/path/to/yt_import.py`.
+`MAESTRO_YT_IMPORT=/path/to/yt_import.py` overrides the script location.
 
 ## Building and playing playlists
 
