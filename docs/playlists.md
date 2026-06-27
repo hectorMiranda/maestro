@@ -33,18 +33,31 @@ maestro import song.mid --play
 Importing flattens polyphony to a single top-line melody (what you play
 note-by-note), with rests for the gaps.
 
-### From YouTube / audio (automatic transcription)
+### From a YouTube URL (one command)
 
-Notes can be extracted from audio with a transcription tool (e.g. Spotify's
-`basic-pitch`, which outputs a `.mid`), then imported:
+Maestro can download a video's audio, transcribe it, and add it to the
+catalogue — all in one step:
 
 ```sh
-basic-pitch out/ song.wav --save-midi
-maestro import out/song_basic_pitch.mid --save song
+maestro import "https://www.youtube.com/watch?v=..." --save my_song
+maestro play my_song --device 3        # hear it on your keyboard
+maestro learn my_song                  # practice it
 ```
 
-Auto-transcription is approximate — expect some artifacts — but it captures the
-real pitches, onsets and durations from the recording.
+This runs the bundled pipeline (`scripts/yt_import.py`). Install its tools once:
+
+```sh
+# full, both-hands transcription:
+pip install yt-dlp imageio-ffmpeg librosa basic-pitch
+# or melody-only (lighter):
+pip install yt-dlp imageio-ffmpeg librosa
+```
+
+The pipeline auto-detects the key and quantizes the result. Auto-transcription
+is approximate — expect some artifacts — but it captures the real pitches,
+onsets and durations from the recording so you can learn any song you like.
+
+You can also point Maestro at the script elsewhere with `MAESTRO_YT_IMPORT=/path/to/yt_import.py`.
 
 ## Building and playing playlists
 
