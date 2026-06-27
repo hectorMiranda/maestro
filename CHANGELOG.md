@@ -2,6 +2,14 @@
 
 All notable changes to Maestro.
 
+## 0.13.0 — One-command setup
+
+- `maestro setup` creates a Python venv with the transcription deps and remembers
+  it — no manual venv/pip/env steps. `maestro setup --full` adds basic-pitch for
+  both-hands transcription. Auto-detects Python 3.10–3.12, or `--python <path>`.
+- `import` now picks its interpreter as `MAESTRO_PYTHON` → the one saved by
+  `setup` → system `python`, so YouTube import "just works" after setup.
+
 ## 0.12.1 — YouTube import on any Python
 
 - `MAESTRO_PYTHON` selects the interpreter for the import pipeline, so you can

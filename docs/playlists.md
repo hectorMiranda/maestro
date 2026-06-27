@@ -44,40 +44,35 @@ maestro play my_song --device 3        # hear it on your keyboard
 maestro learn my_song                  # practice it
 ```
 
-This runs the bundled pipeline (`scripts/yt_import.py`).
-
-> **Use Python 3.11.** The audio/ML libraries (librosa, basic-pitch) don't have
-> wheels for Python 3.13+/3.14 yet, so install them in a 3.11 environment and
-> point Maestro at that interpreter with `MAESTRO_PYTHON`.
-
-### Windows
-
-```powershell
-# install Python 3.11 once:  winget install Python.Python.3.11
-py -3.11 -m venv maestro-venv
-maestro-venv\Scripts\python -m pip install -U pip setuptools wheel
-# full, both hands (uses onnxruntime, no TensorFlow needed):
-maestro-venv\Scripts\python -m pip install yt-dlp imageio-ffmpeg librosa basic-pitch onnxruntime
-# ...or melody only (lighter):
-#   maestro-venv\Scripts\python -m pip install yt-dlp imageio-ffmpeg librosa
-$env:MAESTRO_PYTHON = "$PWD\maestro-venv\Scripts\python.exe"
-cargo run --features midi -- import "https://www.youtube.com/watch?v=..." --save my_song
-```
-
-### macOS / Linux
+This runs the bundled pipeline (`scripts/yt_import.py`). The easiest way to set
+it up is the built-in command:
 
 ```sh
-python3.11 -m venv maestro-venv
-maestro-venv/bin/python -m pip install -U pip setuptools wheel
-maestro-venv/bin/python -m pip install yt-dlp imageio-ffmpeg librosa basic-pitch onnxruntime
-export MAESTRO_PYTHON="$PWD/maestro-venv/bin/python"
+maestro setup            # melody-only (light, reliable)
+maestro setup --full     # both hands (adds basic-pitch + onnxruntime)
+```
+
+`setup` finds a Python 3.10–3.12 (the audio/ML libraries don't ship wheels for
+3.13+/3.14 yet), creates a venv, installs the deps, and remembers the
+interpreter for `import`. On Windows, first `winget install Python.Python.3.11`.
+If auto-detection misses it, point at it: `maestro setup --python C:\path\to\python3.11.exe`.
+
+Then:
+
+```sh
 maestro import "https://www.youtube.com/watch?v=..." --save my_song
+maestro play my_song --device 3
 ```
 
 The pipeline auto-detects the key and quantizes the result. Auto-transcription
 is approximate — expect some artifacts — but it captures the real pitches,
 onsets and durations so you can learn any song you like.
 
+### Manual setup (if you prefer)
+
+`maestro import` chooses its interpreter as: `MAESTRO_PYTHON` env →
+the one saved by `maestro setup` → system `python`. So you can also make your
+own venv and either run `setup --python <it>` or set `MAESTRO_PYTHON`.
 `MAESTRO_YT_IMPORT=/path/to/yt_import.py` overrides the script location.
 
 ## Building and playing playlists
