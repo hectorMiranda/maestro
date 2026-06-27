@@ -40,9 +40,11 @@ On Windows with a CASIO and no toolchain set up, use the bundled scripts
   and scrolls to follow the melody. `+`/`-` change speed; `Esc` stops.
 - **Pick your keyboard** — the interactive **MIDI Devices** screen selects the
   output device (e.g. your CASIO) and remembers it.
-- **Playlists** — import songs (`.mid`, text tabs, or audio transcriptions),
-  build ordered playlists, play them back-to-back, and share a playlist as one
-  self-contained file. See [docs/playlists.md](docs/playlists.md).
+- **Import from a YouTube URL** — `maestro import "<url>" --save <id>` downloads,
+  transcribes (auto key-detect + quantize), and adds any song so you can learn it.
+- **Playlists** — import songs (YouTube, `.mid`, text tabs), build ordered
+  playlists, play them back-to-back, and share a playlist as one self-contained
+  file. See [docs/playlists.md](docs/playlists.md).
 - **Interactive wait-mode learning** — `learn <song>` highlights each note and
   only advances when you play it, with ear feedback and an accuracy score.
 - **Learn any song** — `import` a text tab you typed (e.g. from Songsterr) or a

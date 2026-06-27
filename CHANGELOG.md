@@ -2,6 +2,14 @@
 
 All notable changes to Maestro.
 
+## 0.12.0 — Import from a YouTube URL
+
+- `maestro import "<youtube-url>" --save <id>` downloads the audio, transcribes
+  it (basic-pitch if installed, else pYIN), auto-detects the key, quantizes, and
+  adds it to your catalogue — learn any song you like.
+- Bundled pipeline `scripts/yt_import.py` (override with `MAESTRO_YT_IMPORT`).
+  Install once: `pip install yt-dlp imageio-ffmpeg librosa basic-pitch`.
+
 ## 0.11.0 — Device picker, polyphony, speed
 
 - **Pick your output device in the interactive menu** (MIDI Devices → select →
