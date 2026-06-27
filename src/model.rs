@@ -35,7 +35,31 @@ pub struct ChordProgression {
     pub description: String,
 }
 
+fn default_vel() -> u8 {
+    80
+}
+
+/// A timed note that may overlap others — the building block of polyphonic
+/// (both-hands) arrangements.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NoteEvent {
+    pub note: u8,
+    /// Onset in milliseconds from the start of the piece.
+    #[serde(rename = "start")]
+    pub start_ms: u32,
+    /// Duration in milliseconds.
+    #[serde(rename = "dur")]
+    pub dur_ms: u32,
+    #[serde(default = "default_vel")]
+    pub vel: u8,
+}
+
 /// A playable piece or practice etude.
+///
+/// Two representations: a simple monophonic `notes` timeline (sequential
+/// `[note, vel, ms]`, with vel 0 meaning a rest), and/or a polyphonic `events`
+/// list for full arrangements where notes overlap. [`Song::timeline`] returns a
+/// unified event list from whichever is present.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Song {
     pub id: String,
@@ -46,13 +70,53 @@ pub struct Song {
     pub tempo: u32,
     #[serde(default)]
     pub description: String,
+    #[serde(default)]
     pub notes: Vec<RawNote>,
+    #[serde(default)]
+    pub events: Vec<NoteEvent>,
 }
 
 impl Song {
+    /// Whether this song carries a polyphonic arrangement.
+    pub fn is_polyphonic(&self) -> bool {
+        !self.events.is_empty()
+    }
+
+    /// A unified, time-stamped event list. Uses `events` when present,
+    /// otherwise derives one from the monophonic `notes` timeline.
+    pub fn timeline(&self) -> Vec<NoteEvent> {
+        if !self.events.is_empty() {
+            let mut evs = self.events.clone();
+            evs.sort_by_key(|e| e.start_ms);
+            return evs;
+        }
+        let mut t = 0u32;
+        let mut out = Vec::new();
+        for (note, vel, dur) in &self.notes {
+            if *vel > 0 {
+                out.push(NoteEvent {
+                    note: *note,
+                    start_ms: t,
+                    dur_ms: *dur,
+                    vel: *vel,
+                });
+            }
+            t += dur;
+        }
+        out
+    }
+
     /// Total wall-clock duration of the piece in milliseconds.
     pub fn duration_ms(&self) -> u32 {
-        self.notes.iter().map(|(_, _, d)| *d).sum()
+        if self.events.is_empty() {
+            self.notes.iter().map(|(_, _, d)| *d).sum()
+        } else {
+            self.events
+                .iter()
+                .map(|e| e.start_ms + e.dur_ms)
+                .max()
+                .unwrap_or(0)
+        }
     }
 }
 
