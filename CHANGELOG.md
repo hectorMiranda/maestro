@@ -2,6 +2,19 @@
 
 All notable changes to Maestro.
 
+## 0.11.0 — Device picker, polyphony, speed
+
+- **Pick your output device in the interactive menu** (MIDI Devices → select →
+  saved). Startup uses your saved device, else auto-detects a CASIO. Fixes
+  playback going to the wrong device.
+- **Polyphonic arrangements**: songs can carry overlapping `events` (both hands).
+  A time-scheduled player turns notes on/off by event time, and the on-screen
+  keyboard now lights **every** key currently held.
+- **Speed control**: `+`/`-` change playback speed live in the menu; `--speed`
+  on `play` and `playlist play`.
+- **Amor** re-transcribed as a full both-hands arrangement, quantized and
+  key-snapped to A major.
+
 ## 0.10.0 — Playlists & better import
 
 - **Playlists**: build your own ordered sets of songs and play them back-to-back

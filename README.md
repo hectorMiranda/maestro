@@ -36,7 +36,10 @@ On Windows with a CASIO and no toolchain set up, use the bundled scripts
   UI: arrow-key navigation, type-to-search, scrolling lists, and `Esc` to stop a
   playing piece. Selections play to an auto-detected keyboard (e.g. a CASIO).
 - **Live ASCII piano** — while a song, scale or chord plays, an on-screen piano
-  lights up the key(s) being played and scrolls to follow the melody.
+  lights up the key(s) being played (all of them, for both-hands arrangements)
+  and scrolls to follow the melody. `+`/`-` change speed; `Esc` stops.
+- **Pick your keyboard** — the interactive **MIDI Devices** screen selects the
+  output device (e.g. your CASIO) and remembers it.
 - **Playlists** — import songs (`.mid`, text tabs, or audio transcriptions),
   build ordered playlists, play them back-to-back, and share a playlist as one
   self-contained file. See [docs/playlists.md](docs/playlists.md).
