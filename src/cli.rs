@@ -103,6 +103,43 @@ pub enum Command {
         #[command(subcommand)]
         action: Option<ConfigAction>,
     },
+    /// List your playlists.
+    Playlists,
+    /// Build and play your own playlists (import, add, play, share).
+    Playlist {
+        #[command(subcommand)]
+        action: PlaylistAction,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+pub enum PlaylistAction {
+    /// Create a new, empty playlist.
+    Create {
+        id: String,
+        #[arg(long, default_value = "")]
+        name: String,
+    },
+    /// Show a playlist's tracks.
+    Show { id: String },
+    /// Add a song (by id) to a playlist.
+    Add { id: String, song: String },
+    /// Remove a song from a playlist.
+    Remove { id: String, song: String },
+    /// Play a whole playlist back-to-back.
+    Play {
+        id: String,
+        #[arg(long)]
+        device: Option<usize>,
+    },
+    /// Export a playlist as a shareable, self-contained bundle file.
+    Export { id: String, file: String },
+    /// Import a shareable bundle file (adds its songs and the playlist).
+    Import {
+        file: String,
+        #[arg(long, default_value = "")]
+        id: String,
+    },
 }
 
 #[derive(Subcommand, Debug)]
@@ -142,7 +179,71 @@ pub fn run(cli: Cli) -> Result<()> {
         Command::Whoami => whoami(),
         Command::Progress => show_progress(),
         Command::Config { action } => config(action),
+        Command::Playlists => list_playlists(),
+        Command::Playlist { action } => playlist_cmd(action),
     }
+}
+
+fn list_playlists() -> Result<()> {
+    let playlists = data::load_playlists()?;
+    if playlists.is_empty() {
+        println!("No playlists yet. Create one: maestro playlist create my_mix --name \"My Mix\"");
+    }
+    for p in playlists {
+        println!("{:<20} {}  ({} tracks)", p.id, p.name, p.tracks.len());
+    }
+    Ok(())
+}
+
+fn playlist_cmd(action: PlaylistAction) -> Result<()> {
+    use crate::playlist;
+    match action {
+        PlaylistAction::Create { id, name } => {
+            let p = playlist::create(&id, &name)?;
+            println!(
+                "Created playlist '{}'. Add songs: maestro playlist add {} <song>",
+                p.id, p.id
+            );
+        }
+        PlaylistAction::Show { id } => {
+            let p = data::find_playlist(&id)?.with_context(|| format!("no playlist '{id}'"))?;
+            println!("{} — {}", p.name, p.description);
+            let (songs, missing) = playlist::resolve(&p)?;
+            for (i, s) in songs.iter().enumerate() {
+                println!("  {:>2}. {}", i + 1, songs::summary(s));
+            }
+            for m in missing {
+                println!("   ?. {m} (missing from catalogue)");
+            }
+        }
+        PlaylistAction::Add { id, song } => {
+            playlist::add_track(&id, &song)?;
+            println!("Added '{song}' to '{id}'.");
+        }
+        PlaylistAction::Remove { id, song } => {
+            playlist::remove_track(&id, &song)?;
+            println!("Removed '{song}' from '{id}'.");
+        }
+        PlaylistAction::Play { id, device } => {
+            let p = data::find_playlist(&id)?.with_context(|| format!("no playlist '{id}'"))?;
+            let (songs, _missing) = playlist::resolve(&p)?;
+            for s in &songs {
+                println!("▶ {}", songs::summary(s));
+                midi::play_song(s, device)?;
+            }
+        }
+        PlaylistAction::Export { id, file } => {
+            let n = playlist::export_bundle(&id, &file)?;
+            println!("Exported '{id}' to {file} ({n} songs) — share this file.");
+        }
+        PlaylistAction::Import { file, id } => {
+            let new_id = playlist::import_bundle(&file, &id)?;
+            println!(
+                "Imported bundle as playlist '{new_id}'. Play it: maestro playlist play {new_id}"
+            );
+        }
+    }
+    Ok(())
 }
 
 fn devices() -> Result<()> {

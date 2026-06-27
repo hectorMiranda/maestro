@@ -14,6 +14,7 @@ pub mod midi;
 pub mod model;
 pub mod music;
 pub mod notes;
+pub mod playlist;
 pub mod practice;
 pub mod progress;
 pub mod songs;

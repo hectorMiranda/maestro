@@ -111,45 +111,99 @@ pub fn play_chord_progression(
     }
 }
 
-/// Load a `.mid` file and flatten it into a [`Song`] of monophonic events.
+/// Load a `.mid` file into a monophonic [`Song`] with correct timing.
 ///
-/// This is a deliberately simple importer: it walks the first track with note
-/// events and emits note-on/duration pairs at a fixed nominal tempo.
+/// Properly converts MIDI ticks to milliseconds using the file's division
+/// (ticks-per-quarter) and any tempo changes, then flattens polyphony to a
+/// single top-line melody (highest sounding note), inserting rests for gaps.
 pub fn load_midi_file(path: &str) -> Result<Song> {
-    use midly::{MidiMessage, Smf, TrackEventKind};
+    use midly::{MetaMessage, MidiMessage, Smf, Timing, TrackEventKind};
     let bytes = std::fs::read(path).with_context(|| format!("reading {path}"))?;
     let smf = Smf::parse(&bytes).context("parsing MIDI file")?;
 
-    let mut notes: Vec<(u8, u8, u32)> = Vec::new();
-    for track in smf.tracks.iter() {
-        let mut pending: Option<(u8, u8, u32)> = None;
-        let mut acc: u32 = 0;
-        for event in track.iter() {
-            acc += event.delta.as_int();
-            if let TrackEventKind::Midi { message, .. } = event.kind {
+    // Division: ticks-per-quarter (metrical) or a fixed ticks-per-second.
+    let (ppq, fixed_tps) = match smf.header.timing {
+        Timing::Metrical(t) => (t.as_int() as f64, None),
+        Timing::Timecode(fps, sub) => (1.0, Some(fps.as_f32() as f64 * sub as f64)),
+    };
+
+    // Tempo map: (absolute_tick, microseconds_per_quarter).
+    let mut tempos: Vec<(u64, u32)> = Vec::new();
+    for track in &smf.tracks {
+        let mut tick: u64 = 0;
+        for ev in track {
+            tick += ev.delta.as_int() as u64;
+            if let TrackEventKind::Meta(MetaMessage::Tempo(us)) = ev.kind {
+                tempos.push((tick, us.as_int()));
+            }
+        }
+    }
+    tempos.sort_by_key(|&(t, _)| t);
+
+    let tick_to_ms = |tick: u64| -> f64 {
+        if let Some(tps) = fixed_tps {
+            return tick as f64 / tps * 1000.0;
+        }
+        let mut ms = 0.0;
+        let mut last = 0u64;
+        let mut tempo = 500_000.0; // default 120 BPM
+        for &(t, us) in &tempos {
+            if t >= tick {
+                break;
+            }
+            ms += (t - last) as f64 * (tempo / ppq.max(1.0)) / 1000.0;
+            last = t;
+            tempo = us as f64;
+        }
+        ms + (tick - last) as f64 * (tempo / ppq.max(1.0)) / 1000.0
+    };
+
+    // Note intervals across all tracks, in milliseconds.
+    let mut ivs: Vec<(f64, f64, u8, u8)> = Vec::new(); // (start, end, key, vel)
+    for track in &smf.tracks {
+        let mut tick: u64 = 0;
+        let mut pending: std::collections::HashMap<u8, (f64, u8)> =
+            std::collections::HashMap::new();
+        for ev in track {
+            tick += ev.delta.as_int() as u64;
+            if let TrackEventKind::Midi { message, .. } = ev.kind {
                 match message {
                     MidiMessage::NoteOn { key, vel } if vel.as_int() > 0 => {
-                        if let Some((n, v, _)) = pending.take() {
-                            notes.push((n, v, acc.max(1)));
-                        }
-                        pending = Some((key.as_int(), vel.as_int(), 0));
-                        acc = 0;
+                        pending.insert(key.as_int(), (tick_to_ms(tick), vel.as_int()));
                     }
                     MidiMessage::NoteOff { key, .. } | MidiMessage::NoteOn { key, .. } => {
-                        if let Some((n, v, _)) = pending.take() {
-                            if n == key.as_int() {
-                                notes.push((n, v, acc.max(1)));
-                                acc = 0;
-                            }
+                        if let Some((start, vel)) = pending.remove(&key.as_int()) {
+                            ivs.push((start, tick_to_ms(tick), key.as_int(), vel));
                         }
                     }
                     _ => {}
                 }
             }
         }
-        if !notes.is_empty() {
-            break;
+    }
+    if ivs.is_empty() {
+        anyhow::bail!("no notes found in {path}");
+    }
+
+    // Monophonic top-line: by start time, prefer the highest note; skip overlaps.
+    ivs.sort_by(|a, b| {
+        a.0.partial_cmp(&b.0)
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then(b.2.cmp(&a.2))
+    });
+    let mut notes: Vec<(u8, u8, u32)> = Vec::new();
+    let mut cursor = ivs[0].0;
+    for &(start, end, key, vel) in &ivs {
+        if start + 1.0 < cursor {
+            continue; // overlaps an already-placed note
         }
+        let gap = start - cursor;
+        if gap > 60.0 {
+            notes.push((0, 0, gap.round() as u32));
+        }
+        let dur = (end - start).max(60.0);
+        notes.push((key, vel.max(1), dur.round() as u32));
+        cursor = end;
     }
 
     let name = std::path::Path::new(path)
