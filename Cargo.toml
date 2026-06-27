@@ -1,6 +1,6 @@
 [package]
 name = "maestro"
-version = "0.11.0"
+version = "0.12.0"
 edition = "2021"
 description = "Maestro — a terminal piano-learning companion (scales, chords, songs, MIDI)"
 license = "MIT"
