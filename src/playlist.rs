@@ -174,6 +174,7 @@ mod tests {
             tempo: 120,
             description: String::new(),
             notes: vec![(60, 80, 400)],
+            events: Vec::new(),
         };
         let b = PlaylistBundle::new("Mix", "", vec![song]);
         let json = serde_json::to_string(&b).unwrap();

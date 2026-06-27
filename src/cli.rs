@@ -62,6 +62,9 @@ pub enum Command {
         id: String,
         #[arg(long)]
         device: Option<usize>,
+        /// Playback speed (1.0 = normal, 0.5 = half, 2.0 = double).
+        #[arg(long, default_value_t = 1.0)]
+        speed: f32,
     },
     /// Interactively learn a song in wait mode (play the highlighted note to advance).
     Learn {
@@ -131,6 +134,9 @@ pub enum PlaylistAction {
         id: String,
         #[arg(long)]
         device: Option<usize>,
+        /// Playback speed (1.0 = normal).
+        #[arg(long, default_value_t = 1.0)]
+        speed: f32,
     },
     /// Export a playlist as a shareable, self-contained bundle file.
     Export { id: String, file: String },
@@ -165,7 +171,7 @@ pub fn run(cli: Cli) -> Result<()> {
         Command::Chords { filter } => list_chords(filter.as_deref()),
         Command::Chord { id } => show_chord(&id),
         Command::Songs { filter } => list_songs(filter.as_deref()),
-        Command::Play { id, device } => play(&id, device),
+        Command::Play { id, device, speed } => play(&id, device, speed),
         Command::Learn {
             id,
             input,
@@ -224,12 +230,12 @@ fn playlist_cmd(action: PlaylistAction) -> Result<()> {
             playlist::remove_track(&id, &song)?;
             println!("Removed '{song}' from '{id}'.");
         }
-        PlaylistAction::Play { id, device } => {
+        PlaylistAction::Play { id, device, speed } => {
             let p = data::find_playlist(&id)?.with_context(|| format!("no playlist '{id}'"))?;
-            let (songs, _missing) = playlist::resolve(&p)?;
-            for s in &songs {
+            let (tracks, _missing) = playlist::resolve(&p)?;
+            for s in &tracks {
                 println!("▶ {}", songs::summary(s));
-                midi::play_song(s, device)?;
+                midi::play_timeline(&s.timeline(), device, speed)?;
             }
         }
         PlaylistAction::Export { id, file } => {
@@ -299,6 +305,7 @@ fn show_scale(id: &str, play: bool) -> Result<()> {
                     tempo: 120,
                     description: String::new(),
                     notes: s.notes.iter().map(|n| (*n, 64u8, 400u32)).collect(),
+                    events: Vec::new(),
                 };
                 midi::play_song(&song, None)?;
             }
@@ -336,11 +343,11 @@ fn list_songs(filter: Option<&str>) -> Result<()> {
     Ok(())
 }
 
-fn play(id: &str, device: Option<usize>) -> Result<()> {
+fn play(id: &str, device: Option<usize>, speed: f32) -> Result<()> {
     match data::find_song(id)? {
         Some(s) => {
-            println!("Playing {}", songs::summary(&s));
-            midi::play_song(&s, device)?;
+            println!("Playing {} (speed x{:.2})", songs::summary(&s), speed);
+            midi::play_timeline(&s.timeline(), device, speed)?;
             if let Some(user) = UserStore::load()?.current {
                 let mut p = Progress::load(&user)?;
                 p.record_song(id);

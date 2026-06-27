@@ -136,6 +136,7 @@ pub fn parse(text: &str, fallback_id: &str) -> Result<Song> {
         tempo,
         description,
         notes,
+        events: Vec::new(),
     })
 }
 

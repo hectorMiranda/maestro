@@ -43,6 +43,7 @@ mod tests {
             tempo: 120,
             description: String::new(),
             notes: vec![(60, 64, 400), (62, 64, 400), (64, 64, 400)],
+            events: Vec::new(),
         }
     }
 
