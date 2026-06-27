@@ -80,9 +80,9 @@ pub enum Command {
         #[arg(long)]
         octave_any: bool,
     },
-    /// Import a song from a text tab or `.mid` file; print, play or save it.
+    /// Import a song from a YouTube URL, a text tab, or a `.mid` file.
     Import {
-        /// Path to a `.txt` (Maestro tab) or `.mid` file.
+        /// A YouTube/audio URL, or a path to a `.txt` (Maestro tab) or `.mid` file.
         path: String,
         /// Play the imported song after loading.
         #[arg(long)]
@@ -397,11 +397,18 @@ fn learn(id: &str, input: Option<usize>, output: Option<usize>, octave_any: bool
     Ok(())
 }
 
+fn is_url(s: &str) -> bool {
+    s.starts_with("http://") || s.starts_with("https://")
+}
+
 fn import(path: &str, play_it: bool, save: Option<String>) -> Result<()> {
+    if is_url(path) {
+        return import_url(path, play_it, save);
+    }
     let mut song = load_song_file(path)?;
     println!("Imported {}", songs::summary(&song));
     if play_it {
-        midi::play_song(&song, None)?;
+        midi::play_timeline(&song.timeline(), None, 1.0)?;
     }
     if let Some(id) = save {
         let dir = data::data_root().join("songs");
@@ -410,6 +417,83 @@ fn import(path: &str, play_it: bool, save: Option<String>) -> Result<()> {
         let json = serde_json::to_string_pretty(&song)?;
         std::fs::write(dir.join(format!("{id}.json")), json)?;
         println!("Saved as songs/{id}.json — try `maestro learn {id}`");
+    }
+    Ok(())
+}
+
+/// Find the bundled YouTube-import helper script.
+fn locate_yt_script() -> Result<std::path::PathBuf> {
+    if let Ok(p) = std::env::var("MAESTRO_YT_IMPORT") {
+        return Ok(p.into());
+    }
+    let mut candidates = Vec::new();
+    if let Some(root) = data::data_root().parent() {
+        candidates.push(root.join("scripts/yt_import.py"));
+    }
+    if let Some(m) = option_env!("CARGO_MANIFEST_DIR") {
+        candidates.push(std::path::Path::new(m).join("scripts/yt_import.py"));
+    }
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(d) = exe.parent() {
+            candidates.push(d.join("scripts/yt_import.py"));
+        }
+    }
+    candidates
+        .into_iter()
+        .find(|p| p.exists())
+        .context("could not find scripts/yt_import.py (set MAESTRO_YT_IMPORT to its path)")
+}
+
+/// Derive a stable song id from a URL (e.g. a YouTube `v=` id).
+fn url_id(url: &str) -> String {
+    let raw = url
+        .split(['?', '&'])
+        .find_map(|p| p.strip_prefix("v="))
+        .or_else(|| url.rsplit('/').find(|s| !s.is_empty()))
+        .unwrap_or("imported");
+    let s: String = raw
+        .chars()
+        .filter(|c| c.is_ascii_alphanumeric())
+        .take(16)
+        .collect();
+    format!("yt_{}", if s.is_empty() { "imported".into() } else { s })
+}
+
+/// Import a song straight from a YouTube (or other) URL via the Python pipeline.
+fn import_url(url: &str, play_it: bool, save: Option<String>) -> Result<()> {
+    use std::process::Command;
+    let script = locate_yt_script()?;
+    let data_dir = data::data_root();
+    // We pass an explicit id so we know exactly what to load afterwards.
+    let id = save.unwrap_or_else(|| url_id(url));
+
+    println!("Importing from {url} … (downloading + transcribing; this can take a minute)");
+    let run = |py: &str| -> std::io::Result<std::process::ExitStatus> {
+        Command::new(py)
+            .arg(&script)
+            .arg(url)
+            .arg("--data-dir")
+            .arg(&data_dir)
+            .arg("--id")
+            .arg(&id)
+            .status()
+    };
+    let status = match run("python3") {
+        Ok(s) => s,
+        Err(_) => run("python")
+            .context("python not found — install Python 3 and the deps in scripts/yt_import.py")?,
+    };
+    if !status.success() {
+        bail!("import pipeline failed. Install deps: pip install yt-dlp imageio-ffmpeg librosa basic-pitch");
+    }
+    let song = data::find_song(&id)?
+        .with_context(|| format!("imported song '{id}' not found in catalogue"))?;
+    println!(
+        "Imported '{}' as id '{}'. Try: maestro play {} --device <n>   (or learn {})",
+        song.name, id, id, id
+    );
+    if play_it {
+        midi::play_timeline(&song.timeline(), None, 1.0)?;
     }
     Ok(())
 }
