@@ -268,7 +268,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    subgraph default["default build (no system deps)"]
+    subgraph core["default build (no system deps)"]
         d1["scales / chords / songs"]
         d2["users / progress / config"]
         d3["midly .mid parsing"]
@@ -279,7 +279,7 @@ flowchart LR
         f2["rodio: audio"]
         f3["live playback + wait-mode learn"]
     end
-    default --> feat
+    core --> feat
 ```
 
 Default builds and all tests need **no** system libraries. `--features midi`
