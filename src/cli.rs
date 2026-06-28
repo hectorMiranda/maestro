@@ -516,7 +516,9 @@ fn import_url(url: &str, play_it: bool, save: Option<String>) -> Result<()> {
     };
     if !status.success() {
         bail!(
-            "import pipeline failed. Run `maestro setup` to install the deps (needs Python 3.11)."
+            "import failed (see the error above). A download error usually means the \
+             video is restricted or yt-dlp needs updating — re-run `maestro setup`. \
+             Missing deps? Run `maestro setup` first."
         );
     }
     let song = data::find_song(&id)?
