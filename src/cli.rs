@@ -92,11 +92,18 @@ pub enum Command {
         save: Option<String>,
     },
     /// Set up the Python environment for YouTube import (creates a venv + deps).
+    ///
+    /// Default is a lightweight backend (numpy only) that works on any Python,
+    /// including 3.14. `--melody` adds librosa; `--full` adds basic-pitch
+    /// (both-hands) — those need Python 3.10–3.12.
     Setup {
-        /// Also install basic-pitch for both-hands transcription (heavier).
+        /// Add librosa for a higher-quality melody (needs Python 3.10–3.12).
+        #[arg(long)]
+        melody: bool,
+        /// Add basic-pitch for both-hands transcription (needs Python 3.11).
         #[arg(long)]
         full: bool,
-        /// Interpreter to build the venv from (e.g. a Python 3.11). Auto-detected if omitted.
+        /// Interpreter to build the venv from. Auto-detected if omitted.
         #[arg(long)]
         python: Option<String>,
     },
@@ -188,7 +195,11 @@ pub fn run(cli: Cli) -> Result<()> {
             octave_any,
         } => learn(&id, input, output, octave_any),
         Command::Import { path, play, save } => import(&path, play, save),
-        Command::Setup { full, python } => setup(full, python),
+        Command::Setup {
+            melody,
+            full,
+            python,
+        } => setup(melody, full, python),
         Command::Register { username } => register(&username),
         Command::Login { username } => login(&username),
         Command::Logout => logout(),
@@ -573,6 +584,19 @@ fn verify_first(candidates: Vec<Vec<String>>, any_version: bool) -> Result<Vec<S
     )
 }
 
+/// Find any working Python (the lite backend installs on every version).
+fn find_any_python(explicit: Option<String>) -> Result<Vec<String>> {
+    let candidates: Vec<Vec<String>> = match explicit {
+        Some(p) => vec![vec![p]],
+        None => vec![
+            vec!["python3".into()],
+            vec!["python".into()],
+            vec!["py".into()],
+        ],
+    };
+    verify_first(candidates, true)
+}
+
 fn run_py(py: &str, args: &[&str]) -> Result<()> {
     use std::process::Command;
     let status = Command::new(py)
@@ -587,12 +611,37 @@ fn run_py(py: &str, args: &[&str]) -> Result<()> {
 
 /// `maestro setup` — create a Python venv with the transcription deps and
 /// remember it for `maestro import <url>`.
-fn setup(full: bool, python: Option<String>) -> Result<()> {
+fn setup(melody: bool, full: bool, python: Option<String>) -> Result<()> {
     use std::process::Command;
-    let seed = find_seed_python(python)?;
+
+    // Lite (numpy) works on any Python; librosa/basic-pitch need 3.10–3.12.
+    let needs_old_python = melody || full;
+    let seed = if needs_old_python {
+        find_seed_python(python)?
+    } else {
+        find_any_python(python)?
+    };
+
+    // Deps per tier. Lite needs no librosa/numba, so it builds on Python 3.14.
+    let mut pkgs = vec!["yt-dlp", "imageio-ffmpeg", "numpy", "scipy", "soundfile"];
+    if melody || full {
+        pkgs.push("librosa");
+    }
+    if full {
+        pkgs.push("basic-pitch");
+        pkgs.push("onnxruntime");
+    }
+    let tier = if full {
+        "full (both hands)"
+    } else if melody {
+        "melody (librosa)"
+    } else {
+        "lite (numpy, works on any Python)"
+    };
+
     let venv = crate::config::state_dir().join("yt-venv");
     println!(
-        "Using {} to create a venv at {} …",
+        "Tier: {tier}\nUsing {} to create a venv at {} …",
         seed.join(" "),
         venv.display()
     );
@@ -616,11 +665,6 @@ fn setup(full: bool, python: Option<String>) -> Result<()> {
         &["-m", "pip", "install", "-U", "pip", "setuptools", "wheel"],
     )?;
 
-    let mut pkgs = vec!["yt-dlp", "imageio-ffmpeg", "librosa"];
-    if full {
-        pkgs.push("basic-pitch");
-        pkgs.push("onnxruntime");
-    }
     println!(
         "Installing {} (this can take a few minutes) …",
         pkgs.join(" ")
@@ -633,8 +677,8 @@ fn setup(full: bool, python: Option<String>) -> Result<()> {
     cfg.python_path = Some(py.clone());
     cfg.save()?;
     println!("\n✓ Setup complete. Saved interpreter: {py}");
-    if !full {
-        println!("(melody-only. For both hands later: maestro setup --full)");
+    if !melody && !full {
+        println!("(lite melody. Better melody: `maestro setup --melody`; both hands: `maestro setup --full` — those need Python 3.10–3.12.)");
     }
     println!("Now try: maestro import \"<youtube-url>\" --save my_song");
     Ok(())
