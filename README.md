@@ -40,9 +40,9 @@ On Windows with a CASIO and no toolchain set up, use the bundled scripts
   and scrolls to follow the melody. `+`/`-` change speed; `Esc` stops.
 - **Pick your keyboard** — the interactive **MIDI Devices** screen selects the
   output device (e.g. your CASIO) and remembers it.
-- **Import from a YouTube URL** — `maestro setup` once, then
-  `maestro import "<url>" --save <id>` downloads, transcribes (auto key-detect +
-  quantize), and adds any song so you can learn it.
+- **Import from a YouTube URL** — `maestro setup` once (works on any Python,
+  incl. 3.14), then `maestro import "<url>" --save <id>` downloads, transcribes
+  (auto key-detect + quantize), and adds any song so you can learn it.
 - **Playlists** — import songs (YouTube, `.mid`, text tabs), build ordered
   playlists, play them back-to-back, and share a playlist as one self-contained
   file. See [docs/playlists.md](docs/playlists.md).

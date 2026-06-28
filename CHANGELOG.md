@@ -2,6 +2,15 @@
 
 All notable changes to Maestro.
 
+## 0.14.0 — YouTube import on Python 3.14 (lite backend)
+
+- New **numpy-only transcription backend** (autocorrelation pitch tracking) that
+  needs no librosa/basic-pitch — so it installs and runs on any Python,
+  including 3.13/3.14 where those libraries have no wheels.
+- `maestro setup` now defaults to this **lite** tier (uses your existing Python).
+  `--melody` adds librosa, `--full` adds basic-pitch (those still need 3.10–3.12).
+- Backend auto-selection: basic-pitch → librosa → numpy.
+
 ## 0.13.0 — One-command setup
 
 - `maestro setup` creates a Python venv with the transcription deps and remembers

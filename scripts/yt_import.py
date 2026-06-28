@@ -43,10 +43,7 @@ def download_audio(url, tmp):
     try:
         import yt_dlp
     except ImportError:
-        log("ERROR: dependencies missing. Use Python 3.11 and:")
-        log("  pip install -U pip setuptools wheel")
-        log("  pip install yt-dlp imageio-ffmpeg librosa basic-pitch onnxruntime")
-        log("then set MAESTRO_PYTHON to that interpreter.")
+        log("ERROR: dependencies missing. Run `maestro setup` (lite mode works on any Python).")
         sys.exit(2)
     ff = None
     try:
@@ -85,6 +82,56 @@ def transcribe_basic_pitch(wav):
     _, _, note_events = predict(wav, ICASSP_2022_MODEL_PATH)
     # note_events: (start_s, end_s, pitch, amplitude, pitch_bends)
     return [(n[0], n[1], int(n[2]), max(1, min(127, int(n[3] * 127)))) for n in note_events]
+
+
+def transcribe_numpy(wav):
+    """Lightweight monophonic pitch tracking with numpy + scipy + soundfile only
+    (no librosa/numba), so it runs on bleeding-edge Pythons like 3.14."""
+    import numpy as np
+    import soundfile as sf
+    from scipy.signal import medfilt, resample
+    log("Transcribing with the numpy backend (melody, no librosa)…")
+    y, sr = sf.read(wav)
+    if getattr(y, "ndim", 1) > 1:
+        y = y.mean(axis=1)
+    y = np.asarray(y, dtype=np.float64)
+    target = 16000
+    if sr > target:
+        y = resample(y, int(len(y) * target / sr))
+        sr = target
+    frame, hop = 2048, 512
+    fmin, fmax = 65.0, 1000.0
+    lag_min, lag_max = int(sr / fmax), int(sr / fmin)
+    win = np.hanning(frame)
+    peak = float(np.max(np.abs(y))) or 1.0
+    thresh = 0.02 * peak
+    nfr = max(0, (len(y) - frame) // hop)
+    seq = np.full(nfr, -1, dtype=int)
+    for i in range(nfr):
+        fr = y[i * hop:i * hop + frame]
+        if np.sqrt(np.mean(fr * fr)) < thresh:
+            continue
+        fr = (fr - fr.mean()) * win
+        spec = np.fft.rfft(fr, 2 * frame)
+        ac = np.fft.irfft(spec * np.conj(spec))[:frame]
+        if ac[0] <= 0 or lag_max >= len(ac):
+            continue
+        lag = lag_min + int(np.argmax(ac[lag_min:lag_max]))
+        if ac[lag] / ac[0] < 0.3:  # weak periodicity => unvoiced
+            continue
+        f0 = sr / lag
+        seq[i] = int(round(69 + 12 * np.log2(f0 / 440.0)))
+    if len(seq):
+        seq = medfilt(seq, 5)
+    sec = hop / sr
+    ivs, cur, start = [], (seq[0] if len(seq) else -1), 0
+    for i in range(1, len(seq) + 1):
+        if i == len(seq) or seq[i] != cur:
+            if cur > 0 and (i - start) * sec >= 0.08:
+                ivs.append((start * sec, i * sec, int(cur), 80))
+            cur = seq[i] if i < len(seq) else cur
+            start = i
+    return ivs
 
 
 def transcribe_pyin(wav):
@@ -186,21 +233,39 @@ def main():
     ap.add_argument("--id", default="")
     ap.add_argument("--data-dir", required=True)
     ap.add_argument("--quantize", type=int, default=120)
-    ap.add_argument("--backend", default="auto", choices=["auto", "basic-pitch", "pyin"])
+    ap.add_argument(
+        "--backend", default="auto",
+        choices=["auto", "basic-pitch", "pyin", "numpy"])
     args = ap.parse_args()
 
     tmp = tempfile.mkdtemp(prefix="maestro_yt_")
     wav, title = download_audio(args.url, tmp)
 
+    def have(mod):
+        try:
+            __import__(mod)
+            return True
+        except Exception:
+            return False
+
     backend = args.backend
     if backend == "auto":
-        try:
-            import basic_pitch  # noqa: F401
+        if have("basic_pitch"):
             backend = "basic-pitch"
-        except ImportError:
+        elif have("librosa"):
             backend = "pyin"
+        elif have("soundfile") and have("scipy"):
+            backend = "numpy"
+        else:
+            log("ERROR: no transcription backend available. Run `maestro setup`.")
+            sys.exit(2)
+    fn = {
+        "basic-pitch": transcribe_basic_pitch,
+        "pyin": transcribe_pyin,
+        "numpy": transcribe_numpy,
+    }[backend]
     try:
-        ivs = transcribe_basic_pitch(wav) if backend == "basic-pitch" else transcribe_pyin(wav)
+        ivs = fn(wav)
     except Exception as e:
         log(f"ERROR during transcription: {e}")
         sys.exit(3)

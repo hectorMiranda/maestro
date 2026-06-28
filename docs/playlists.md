@@ -48,14 +48,17 @@ This runs the bundled pipeline (`scripts/yt_import.py`). The easiest way to set
 it up is the built-in command:
 
 ```sh
-maestro setup            # melody-only (light, reliable)
-maestro setup --full     # both hands (adds basic-pitch + onnxruntime)
+maestro setup            # lite: numpy-only melody — works on ANY Python (incl. 3.14)
+maestro setup --melody   # better melody (adds librosa; needs Python 3.10–3.12)
+maestro setup --full     # both hands (adds basic-pitch; needs Python 3.11)
 ```
 
-`setup` finds a Python 3.10–3.12 (the audio/ML libraries don't ship wheels for
-3.13+/3.14 yet), creates a venv, installs the deps, and remembers the
-interpreter for `import`. On Windows, first `winget install Python.Python.3.11`.
-If auto-detection misses it, point at it: `maestro setup --python C:\path\to\python3.11.exe`.
+`setup` creates a venv, installs the deps, and remembers the interpreter for
+`import`. The default **lite** tier uses only numpy/scipy/soundfile, which have
+wheels for every Python — so you don't need to install an older Python. The
+`--melody`/`--full` tiers pull librosa/basic-pitch, which only have wheels for
+Python 3.10–3.12 (so install one, e.g. `winget install Python.Python.3.11`, and
+`setup` will find it — or point at it with `--python <path>`).
 
 Then:
 
