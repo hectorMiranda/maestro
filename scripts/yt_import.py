@@ -52,18 +52,47 @@ def download_audio(url, tmp):
     except Exception:
         import shutil
         ff = shutil.which("ffmpeg")
-    opts = {
-        "format": "bestaudio",
+    base = {
+        "format": "bestaudio/best",
         "outtmpl": os.path.join(tmp, "audio.%(ext)s"),
         "postprocessors": [{"key": "FFmpegExtractAudio", "preferredcodec": "wav"}],
         "quiet": True,
         "no_warnings": True,
+        "retries": 5,
+        "fragment_retries": 5,
     }
     if ff:
-        opts["ffmpeg_location"] = ff
+        base["ffmpeg_location"] = ff
     log("Downloading audio…")
-    with yt_dlp.YoutubeDL(opts) as ydl:
-        info = ydl.extract_info(url, download=True)
+    # YouTube often 403s the default 'web' client; the android/ios clients work.
+    client_sets = [
+        ["android", "ios"],
+        ["ios", "android", "web"],
+        None,  # yt-dlp defaults
+    ]
+    info = None
+    last_err = None
+    for clients in client_sets:
+        opts = dict(base)
+        if clients:
+            opts["extractor_args"] = {"youtube": {"player_client": clients}}
+        try:
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                info = ydl.extract_info(url, download=True)
+            break
+        except Exception as e:
+            last_err = e
+            log(f"  download attempt failed ({'/'.join(clients) if clients else 'default'}); retrying…")
+            for f in os.listdir(tmp):
+                try:
+                    os.remove(os.path.join(tmp, f))
+                except OSError:
+                    pass
+    if info is None:
+        log("ERROR: could not download. YouTube may have changed — update yt-dlp:")
+        log("  maestro setup   (re-runs install)   or manually: pip install -U yt-dlp")
+        log(f"  (last error: {last_err})")
+        sys.exit(5)
     title = info.get("title", "imported")
     wav = os.path.join(tmp, "audio.wav")
     if not os.path.exists(wav):

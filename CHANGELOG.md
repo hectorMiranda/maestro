@@ -2,6 +2,12 @@
 
 All notable changes to Maestro.
 
+## 0.14.2 — Fix YouTube 403 downloads
+
+- The import downloader now uses YouTube's android/ios player clients (with
+  retries), which avoids the HTTP 403 the default web client often hits.
+- Clearer error message on a failed download (vs a deps problem).
+
 ## 0.14.1 — Microsoft Store Python fix
 
 - `maestro setup` now follows the path redirection used by the Microsoft Store
