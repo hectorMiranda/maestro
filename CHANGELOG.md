@@ -2,6 +2,12 @@
 
 All notable changes to Maestro.
 
+## 0.14.1 — Microsoft Store Python fix
+
+- `maestro setup` now follows the path redirection used by the Microsoft Store
+  Python (it created the venv in a hidden location), by reading the interpreter
+  path the venv tool reports. Suggests python.org Python if it still can't.
+
 ## 0.14.0 — YouTube import on Python 3.14 (lite backend)
 
 - New **numpy-only transcription backend** (autocorrelation pitch tracking) that
