@@ -645,20 +645,46 @@ fn setup(melody: bool, full: bool, python: Option<String>) -> Result<()> {
         seed.join(" "),
         venv.display()
     );
-    let ok = Command::new(&seed[0])
+    let out = Command::new(&seed[0])
         .args(&seed[1..])
         .arg("-m")
         .arg("venv")
         .arg(&venv)
-        .status()
-        .context("failed to launch Python to create the venv")?
-        .success();
-    if !ok {
+        .output()
+        .context("failed to launch Python to create the venv")?;
+    if !out.status.success() {
+        let _ = std::io::stderr().write_all(&out.stderr);
         bail!("could not create the venv (is the Python venv module available?)");
     }
 
-    let py = venv_python(&venv);
-    let py = py.to_string_lossy().to_string();
+    // The Microsoft Store Python redirects AppData writes, so the venv may land
+    // elsewhere. `venv` prints the real interpreter path as "Actual location:".
+    let combined = format!(
+        "{}{}",
+        String::from_utf8_lossy(&out.stdout),
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let py = combined
+        .lines()
+        .find(|l| l.contains("Actual location:"))
+        .and_then(|l| {
+            let a = l.find('"')?;
+            let b = l.rfind('"')?;
+            if b > a {
+                Some(l[a + 1..b].to_string())
+            } else {
+                None
+            }
+        })
+        .unwrap_or_else(|| venv_python(&venv).to_string_lossy().to_string());
+    if !std::path::Path::new(&py).exists() {
+        bail!(
+            "venv created but its python was not found at {py}.\n\
+             Tip: the Microsoft Store Python redirects paths. Install Python from \
+             python.org instead, or pass --python C:\\path\\to\\python.exe."
+        );
+    }
+    println!("venv interpreter: {py}");
     println!("Upgrading pip toolchain …");
     run_py(
         &py,
