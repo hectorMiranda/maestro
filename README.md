@@ -1,86 +1,118 @@
 # Maestro
 
-A terminal piano-learning companion written in Rust. Maestro teaches scales,
-chord progressions and songs, and can **interactively teach you any song** on a
-real MIDI keyboard — show the next note, wait until you play it, score you.
+A terminal piano-learning companion written in Rust. Browse and play scales,
+chord progressions and songs on a real MIDI keyboard (e.g. a CASIO), watch an
+on-screen piano light up the keys, **import any song from a YouTube URL**, build
+playlists, and **learn pieces interactively** — Maestro shows the next note,
+waits until you play it, and scores you.
+
+```mermaid
+flowchart LR
+    you([You]) --> maestro[maestro CLI / TUI]
+    maestro --> catalogue[("data/*.json<br/>144 scales · 96 chords · 380+ songs")]
+    maestro -->|"--features midi"| casio{{Your keyboard}}
+    maestro -->|import url| yt{{YouTube}}
+    yt -->|transcribe| catalogue
+```
+
+See **[docs/architecture.md](docs/architecture.md)** for the full design with
+diagrams.
 
 ## Quick start
 
 ```sh
-# interactive menu
-cargo run
-
-# or use subcommands
-cargo run -- scales
+cargo run                              # full-screen interactive menu
+cargo run -- songs                     # list songs
+cargo run -- play el_manicero          # play to the default device
 cargo run -- scale c_major --play
 cargo run -- chord c_i_iv_v
-cargo run -- songs
-cargo run -- play el_manicero
 
-# interactively learn a song on your keyboard (needs the midi feature)
-cargo run --features midi -- learn twinkle
-cargo run --features midi -- learn examples/ode_to_joy.txt
+# with a real keyboard (Windows works out of the box; Linux needs ALSA — see below)
+cargo run --features midi -- devices
+cargo run --features midi -- play amor_cortes --device 3 --speed 0.8
+cargo run --features midi -- learn twinkle           # interactive wait-mode
 ```
 
-On Windows with a CASIO and no toolchain set up, use the bundled scripts
-(no build required) — see [Interactive learning](docs/learning.md):
+In the **interactive menu** (`cargo run`): arrow keys to move, type to search,
+`Enter` to play, `+`/`-` to change speed, `Esc` to stop. Pick your output device
+under **MIDI Devices** (it's remembered).
 
-```powershell
-.\scripts\windows\play-casio.ps1 -Id el_manicero
-.\scripts\windows\maestro-learn.ps1 -Id twinkle
+## Import any song from YouTube
+
+```sh
+maestro setup                                  # one-time; works on any Python
+maestro import "https://youtube.com/watch?v=…" --save my_song
+maestro play my_song --device 3
+maestro learn my_song
 ```
+
+`setup` builds a small Python venv and installs the transcription tools (a
+numpy-only backend that works even on Python 3.14; `--melody`/`--full` add
+higher-quality backends that need Python 3.10–3.12). The pipeline downloads the
+audio, transcribes it, auto-detects the key, and quantizes the result. It's
+approximate, but it captures the real notes so you can learn the tune. See
+**[docs/playlists.md](docs/playlists.md)**.
 
 ## Features
 
-- **Modern interactive menu** — run `maestro` with no arguments for a full-screen
-  UI: arrow-key navigation, type-to-search, scrolling lists, and `Esc` to stop a
-  playing piece. Selections play to an auto-detected keyboard (e.g. a CASIO).
-- **Live ASCII piano** — while a song, scale or chord plays, an on-screen piano
-  lights up the key(s) being played (all of them, for both-hands arrangements)
-  and scrolls to follow the melody. `+`/`-` change speed; `Esc` stops.
-- **Pick your keyboard** — the interactive **MIDI Devices** screen selects the
-  output device (e.g. your CASIO) and remembers it.
-- **Import from a YouTube URL** — `maestro setup` once (works on any Python,
-  incl. 3.14), then `maestro import "<url>" --save <id>` downloads, transcribes
-  (auto key-detect + quantize), and adds any song so you can learn it.
-- **Playlists** — import songs (YouTube, `.mid`, text tabs), build ordered
-  playlists, play them back-to-back, and share a playlist as one self-contained
-  file. See [docs/playlists.md](docs/playlists.md).
-- **Interactive wait-mode learning** — `learn <song>` highlights each note and
-  only advances when you play it, with ear feedback and an accuracy score.
-- **Learn any song** — `import` a text tab you typed (e.g. from Songsterr) or a
-  `.mid` file, then `learn` it. Bundled popular songs: El Manicero, Amor,
-  Cielito Lindo, La Bamba, Bésame Mucho, plus classics.
-- **Scales** — 12 keys × 12 scale types, loaded from `data/scales/`.
-- **Chord progressions** — common progressions in every key.
-- **Songs & etudes** — built-in melodies plus generated practice etudes.
-- **Users & progress** — local accounts (`register`/`login`) with per-user
-  practice tracking.
-- **Configuration** — tempo, default device and theme in a JSON config.
-- **MIDI** — live device input/output behind the optional `midi` feature; `.mid`
-  file import via `midly` is always available. Windows WinMM scripts under
-  [`scripts/windows/`](scripts/windows/) drive a keyboard with no build.
+- **Interactive menu** — arrow-key navigation, type-to-search, scrolling lists.
+- **Live ASCII piano** — the played key(s) light up (all of them for both-hands
+  arrangements) and the keyboard scrolls to follow the music.
+- **Wait-mode learning** — `learn <song>` advances only when you play the right
+  note, with ear feedback and an accuracy score; `--octave-any` to be forgiving.
+- **Import** — from a **YouTube URL**, a `.mid` file, or a typed text tab.
+- **Playlists** — build ordered sets, play back-to-back, and export a
+  self-contained bundle to share.
+- **Speed control** — `+`/`-` live, or `--speed` on the CLI.
+- **Device picker** — choose and remember your output keyboard.
+- **Catalogue** — 144 scales (12 keys × 12 types), 96 chord progressions, and
+  380+ songs/etudes, all JSON under `data/`.
+- **Users & progress** — local `register`/`login` with per-user practice stats.
+
+## Command reference
+
+| Command | Description |
+|---------|-------------|
+| `maestro` / `tui` | Interactive full-screen menu (default) |
+| `scales` / `scale <id> [--play]` | List / show a scale |
+| `chords` / `chord <id>` | List / show a chord progression |
+| `songs` / `play <id> [--device N] [--speed S]` | List / play a song |
+| `learn <id\|file> [--input N] [--octave-any]` | Interactive wait-mode practice |
+| `import <url\|file> [--save id] [--play]` | Import from YouTube, `.mid`, or a tab |
+| `setup [--melody\|--full] [--python P]` | Install the YouTube-import toolchain |
+| `playlists` · `playlist create/add/remove/show/play/export/import` | Playlists |
+| `devices` | List MIDI input/output devices |
+| `register/login/logout/whoami/progress` | Local users + practice tracking |
+| `config [show\|set-device\|set-tempo]` | Inspect or edit configuration |
+
+Run `maestro <command> --help` for details.
 
 ## Building
 
-The default build needs no system libraries:
+The default build needs **no** system libraries:
 
 ```sh
 cargo build
 cargo test
 ```
 
-Live MIDI output needs ALSA dev headers on Linux:
+Live MIDI on Linux needs ALSA dev headers; Windows/macOS do not:
 
 ```sh
-sudo apt-get install -y libasound2-dev
+sudo apt-get install -y libasound2-dev    # Linux only
 cargo run --features midi -- devices
 ```
 
+On Windows you can also drive a CASIO with **no Rust build** via the WinMM
+scripts in [`scripts/windows/`](scripts/windows/).
+
 ## Documentation
 
-See [`docs/`](docs/) for the CLI reference, architecture notes and a lesson
-page for every scale and chord progression.
+- [docs/architecture.md](docs/architecture.md) — design & diagrams
+- [docs/learning.md](docs/learning.md) — wait-mode learning & the text-tab format
+- [docs/playlists.md](docs/playlists.md) — playlists, importing, YouTube setup
+- [docs/cli.md](docs/cli.md) — CLI reference
+- per-scale / per-chord lesson pages under [docs/](docs/)
 
 ## License
 
