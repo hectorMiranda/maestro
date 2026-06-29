@@ -62,9 +62,18 @@ pub enum Command {
         id: String,
         #[arg(long)]
         device: Option<usize>,
-        /// Playback speed (1.0 = normal, 0.5 = half, 2.0 = double).
-        #[arg(long, default_value_t = 1.0)]
-        speed: f32,
+        /// Target tempo in BPM (defaults to the song's own tempo).
+        #[arg(long)]
+        bpm: Option<u32>,
+        /// Playback speed multiplier (alias for --bpm; 1.0 = the song's tempo).
+        #[arg(long)]
+        speed: Option<f32>,
+        /// Play an audible metronome click along with the piece.
+        #[arg(long)]
+        metronome: bool,
+        /// Beats per bar for the metronome accent (time-signature numerator).
+        #[arg(long, default_value_t = 4)]
+        beats: u32,
     },
     /// Interactively learn a song in wait mode (play the highlighted note to advance).
     Learn {
@@ -122,6 +131,20 @@ pub enum Command {
         #[command(subcommand)]
         action: Option<ConfigAction>,
     },
+    /// Run a standalone metronome (a steady click in BPM).
+    Metronome {
+        /// Beats per minute (defaults to the configured tempo).
+        #[arg(long)]
+        bpm: Option<u32>,
+        /// Beats per bar — the time-signature numerator (accents each downbeat).
+        #[arg(long, default_value_t = 4)]
+        beats: u32,
+        #[arg(long)]
+        device: Option<usize>,
+        /// Stop after this many bars (default: run until Ctrl-C).
+        #[arg(long)]
+        bars: Option<u32>,
+    },
     /// List your playlists.
     Playlists,
     /// Build and play your own playlists (import, add, play, share).
@@ -150,9 +173,18 @@ pub enum PlaylistAction {
         id: String,
         #[arg(long)]
         device: Option<usize>,
-        /// Playback speed (1.0 = normal).
-        #[arg(long, default_value_t = 1.0)]
-        speed: f32,
+        /// Target tempo in BPM (defaults to each song's own tempo).
+        #[arg(long)]
+        bpm: Option<u32>,
+        /// Playback speed multiplier (alias for --bpm; 1.0 = each song's tempo).
+        #[arg(long)]
+        speed: Option<f32>,
+        /// Play an audible metronome click along with each piece.
+        #[arg(long)]
+        metronome: bool,
+        /// Beats per bar for the metronome accent.
+        #[arg(long, default_value_t = 4)]
+        beats: u32,
     },
     /// Export a playlist as a shareable, self-contained bundle file.
     Export { id: String, file: String },
@@ -172,6 +204,11 @@ pub enum ConfigAction {
     SetDevice { index: usize },
     /// Set the default tempo (BPM).
     SetTempo { bpm: u32 },
+    /// Turn the default metronome click on (true) or off (false).
+    SetMetronome {
+        #[arg(action = clap::ArgAction::Set)]
+        on: bool,
+    },
 }
 
 /// Apply global flags then dispatch the chosen subcommand.
@@ -187,7 +224,20 @@ pub fn run(cli: Cli) -> Result<()> {
         Command::Chords { filter } => list_chords(filter.as_deref()),
         Command::Chord { id } => show_chord(&id),
         Command::Songs { filter } => list_songs(filter.as_deref()),
-        Command::Play { id, device, speed } => play(&id, device, speed),
+        Command::Play {
+            id,
+            device,
+            bpm,
+            speed,
+            metronome,
+            beats,
+        } => play(&id, device, bpm, speed, metronome, beats),
+        Command::Metronome {
+            bpm,
+            beats,
+            device,
+            bars,
+        } => metronome_cmd(bpm, beats, device, bars),
         Command::Learn {
             id,
             input,
@@ -251,12 +301,25 @@ fn playlist_cmd(action: PlaylistAction) -> Result<()> {
             playlist::remove_track(&id, &song)?;
             println!("Removed '{song}' from '{id}'.");
         }
-        PlaylistAction::Play { id, device, speed } => {
+        PlaylistAction::Play {
+            id,
+            device,
+            bpm,
+            speed,
+            metronome,
+            beats,
+        } => {
             let p = data::find_playlist(&id)?.with_context(|| format!("no playlist '{id}'"))?;
             let (tracks, _missing) = playlist::resolve(&p)?;
             for s in &tracks {
-                println!("▶ {}", songs::summary(s));
-                midi::play_timeline(&s.timeline(), device, speed)?;
+                let (sp, target_bpm) = resolve_tempo(speed, bpm, s.tempo);
+                println!(
+                    "▶ {} (♩ = {target_bpm}{})",
+                    songs::summary(s),
+                    if metronome { ", metronome" } else { "" }
+                );
+                let metro = metro_opt(metronome, s.tempo, beats);
+                midi::play_timeline(&s.timeline(), device, sp, metro)?;
             }
         }
         PlaylistAction::Export { id, file } => {
@@ -364,11 +427,47 @@ fn list_songs(filter: Option<&str>) -> Result<()> {
     Ok(())
 }
 
-fn play(id: &str, device: Option<usize>, speed: f32) -> Result<()> {
+/// Resolve a playback speed and the BPM to display/click at, from the optional
+/// `--speed` (direct multiplier) and `--bpm` (target tempo) flags and a piece's
+/// `native` tempo. `--speed` wins if both are given; with neither, the piece
+/// plays at its own tempo (speed 1.0).
+fn resolve_tempo(speed: Option<f32>, bpm: Option<u32>, native: u32) -> (f32, u32) {
+    use crate::metronome;
+    match (speed, bpm) {
+        (Some(sp), _) => (sp.max(0.01), metronome::bpm_for(sp, native)),
+        (None, Some(b)) => (metronome::speed_for(b, native), b.max(1)),
+        (None, None) => (1.0, native.max(1)),
+    }
+}
+
+/// Metronome settings for `play`/`playlist play`: clicks live on the piece's
+/// native beat grid so they ride the playback-speed scaling and sound at the
+/// target BPM.
+fn metro_opt(on: bool, native: u32, beats: u32) -> Option<midi::Metro> {
+    on.then(|| midi::Metro {
+        beat_ms: crate::metronome::beat_ms(native),
+        beats,
+    })
+}
+
+fn play(
+    id: &str,
+    device: Option<usize>,
+    bpm: Option<u32>,
+    speed: Option<f32>,
+    metronome: bool,
+    beats: u32,
+) -> Result<()> {
     match data::find_song(id)? {
         Some(s) => {
-            println!("Playing {} (speed x{:.2})", songs::summary(&s), speed);
-            midi::play_timeline(&s.timeline(), device, speed)?;
+            let (speed, bpm) = resolve_tempo(speed, bpm, s.tempo);
+            println!(
+                "Playing {} (♩ = {bpm}{})",
+                songs::summary(&s),
+                if metronome { ", metronome" } else { "" }
+            );
+            let metro = metro_opt(metronome, s.tempo, beats);
+            midi::play_timeline(&s.timeline(), device, speed, metro)?;
             if let Some(user) = UserStore::load()?.current {
                 let mut p = Progress::load(&user)?;
                 p.record_song(id);
@@ -378,6 +477,18 @@ fn play(id: &str, device: Option<usize>, speed: f32) -> Result<()> {
         }
         None => bail!("no song with id '{id}'"),
     }
+}
+
+fn metronome_cmd(
+    bpm: Option<u32>,
+    beats: u32,
+    device: Option<usize>,
+    bars: Option<u32>,
+) -> Result<()> {
+    let cfg = Config::load().ok();
+    let bpm = bpm.unwrap_or_else(|| cfg.as_ref().map(|c| c.tempo).unwrap_or(120));
+    let device = device.or_else(|| cfg.and_then(|c| c.default_midi_device));
+    midi::metronome(bpm, beats, device, bars)
 }
 
 /// Load a song from a `.txt` (Maestro tab) or `.mid` file.
@@ -429,7 +540,7 @@ fn import(path: &str, play_it: bool, save: Option<String>) -> Result<()> {
     let mut song = load_song_file(path)?;
     println!("Imported {}", songs::summary(&song));
     if play_it {
-        midi::play_timeline(&song.timeline(), None, 1.0)?;
+        midi::play_timeline(&song.timeline(), None, 1.0, None)?;
     }
     if let Some(id) = save {
         let dir = data::data_root().join("songs");
@@ -528,7 +639,7 @@ fn import_url(url: &str, play_it: bool, save: Option<String>) -> Result<()> {
         song.name, id, id, id
     );
     if play_it {
-        midi::play_timeline(&song.timeline(), None, 1.0)?;
+        midi::play_timeline(&song.timeline(), None, 1.0, None)?;
     }
     Ok(())
 }
@@ -786,6 +897,11 @@ fn config(action: Option<ConfigAction>) -> Result<()> {
             cfg.tempo = bpm;
             cfg.save()?;
             println!("tempo = {bpm}");
+        }
+        ConfigAction::SetMetronome { on } => {
+            cfg.metronome = on;
+            cfg.save()?;
+            println!("metronome = {on}");
         }
     }
     Ok(())

@@ -47,7 +47,7 @@ flowchart TB
 |-------|---------|----------------|
 | Entry | `main`, `cli` | Parse args (clap), dispatch to a command or the TUI |
 | UI | `tui`, `keyboard` | Full-screen crossterm menu; ASCII piano rendering |
-| Domain | `music`, `theory`, `notes`, `songs`, `practice`, `playlist`, `importer`, `user`, `progress`, `config` | The music/learning logic |
+| Domain | `music`, `theory`, `notes`, `songs`, `practice`, `playlist`, `importer`, `metronome`, `user`, `progress`, `config` | The music/learning logic |
 | Data | `model`, `data` | Serde types and the JSON-catalogue loader |
 | I/O | `midi` | Device output/input + the playback scheduler (feature-gated) |
 | Sidecar | `scripts/yt_import.py` | Download + transcribe audio → a song JSON |
@@ -90,6 +90,9 @@ flowchart LR
     keyboard --> notes
     midi --> model
     midi --> practice
+    midi --> metronome
+    tui --> metronome
+    cli --> metronome
     progress --> config
     user --> config
 
@@ -163,8 +166,14 @@ classDiagram
 Every playable thing — a scale, a chord progression, a monophonic or polyphonic
 song — is reduced to a `Vec<NoteEvent>`. The TUI scheduler advances a song-time
 clock, turning notes on/off at their event times, lighting the on-screen
-keyboard with **all** currently-held notes, and honouring live `+`/`-` speed
-changes and `Esc`.
+keyboard with **all** currently-held notes, and honouring live `+`/`-` BPM
+changes, the `m` metronome toggle, and `Esc`.
+
+Tempo is expressed in **BPM**: playback speed is `target_bpm / native_bpm` (the
+`metronome` module owns this arithmetic). The metronome click rides the piece's
+own beat grid in song-time, so it always sounds at the chosen BPM regardless of
+the speed scaling; the click is a woodblock on the General MIDI percussion
+channel, accented on each downbeat.
 
 ```mermaid
 flowchart TB
@@ -172,12 +181,14 @@ flowchart TB
     tl --> loop{"t <= total?"}
     loop -- yes --> on["note_on for events with start <= t"]
     on --> off["note_off for events that ended"]
-    off --> draw["now_playing(): progress bar +<br/>live keyboard of held notes"]
-    draw --> poll["poll_step(step / speed)"]
+    off --> click["metronome click on the beat grid (channel 9)"]
+    click --> draw["now_playing(): progress bar + BPM +<br/>live keyboard of held notes"]
+    draw --> poll["poll_step(step / speed),  speed = bpm / native"]
     poll -->|Esc / Ctrl-C| stop["all_off, return interrupted"]
-    poll -->|plus / minus| spd["adjust speed"] --> adv
+    poll -->|plus / minus| bpm["adjust BPM"] --> adv
+    poll -->|m| mt["toggle metronome"] --> adv
     poll -->|timeout| adv["t += STEP"]
-    spd --> loop
+    bpm --> loop
     adv --> loop
     loop -- no --> done["all_off"]
 ```

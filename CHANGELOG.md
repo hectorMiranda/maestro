@@ -2,6 +2,21 @@
 
 All notable changes to Maestro.
 
+## 0.15.0 — Metronome & tempo in BPM
+
+- **Set the pace in BPM** instead of an abstract multiplier. `maestro play <id>
+  --bpm 90` performs the piece at 90 BPM; with no flag it plays at the song's
+  own notated tempo (unchanged behaviour). `--speed` is kept as an alias.
+- **Audible metronome** — `--metronome` interleaves a woodblock click on the
+  General MIDI percussion channel, accenting each downbeat. `--beats N` sets the
+  bar length (default 4/4). Works on `play` and `playlist play`.
+- **Standalone metronome** — `maestro metronome [--bpm N] [--beats N] [--bars N]`
+  is a plain click track (runs until Ctrl-C, or a fixed number of bars).
+- **In the TUI now-playing screen**: shows `♩ = <bpm>`, `+`/`-` change the BPM
+  (±5), and `m` toggles the metronome click live.
+- **Config** — `maestro config set-metronome <true|false>` sets whether the TUI
+  click is on by default; the existing `set-tempo` is the default metronome BPM.
+
 ## 0.14.2 — Fix YouTube 403 downloads
 
 - The import downloader now uses YouTube's android/ios player clients (with

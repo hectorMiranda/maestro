@@ -68,19 +68,55 @@ pub fn play_song(song: &Song, device: Option<usize>) -> Result<()> {
     }
 }
 
+/// Metronome settings for play-along. `beat_ms` is the beat spacing in the same
+/// (song-time) domain as the events, so the clicks ride the same speed scaling
+/// as the notes and end up sounding at the target BPM; `beats` is the bar
+/// length (downbeat accent every `beats` beats).
+#[derive(Debug, Clone, Copy)]
+pub struct Metro {
+    pub beat_ms: u32,
+    pub beats: u32,
+}
+
 /// Play a polyphonic timeline (overlapping notes) at `speed` (1.0 = normal,
-/// <1 slower, >1 faster). Handles both monophonic and full arrangements.
-pub fn play_timeline(events: &[NoteEvent], device: Option<usize>, speed: f32) -> Result<()> {
+/// <1 slower, >1 faster). Handles both monophonic and full arrangements. With
+/// `metro` set, an audible metronome click is interleaved on the percussion
+/// channel.
+pub fn play_timeline(
+    events: &[NoteEvent],
+    device: Option<usize>,
+    speed: f32,
+    metro: Option<Metro>,
+) -> Result<()> {
     let speed = if speed <= 0.0 { 1.0 } else { speed };
     #[cfg(feature = "midi")]
     {
+        use crate::metronome;
         use midir::MidiOutput;
         use std::{thread, time::Duration};
-        // Flatten to timed on/off actions; at equal times, off before on.
-        let mut acts: Vec<(u32, bool, u8, u8)> = Vec::new();
+        // Flatten to timed on/off actions: (time, on, channel, note, vel).
+        // At equal times, off before on.
+        let mut acts: Vec<(u32, bool, u8, u8, u8)> = Vec::new();
         for e in events {
-            acts.push((e.start_ms, true, e.note, e.vel));
-            acts.push((e.start_ms + e.dur_ms, false, e.note, 0));
+            acts.push((e.start_ms, true, 0, e.note, e.vel));
+            acts.push((e.start_ms + e.dur_ms, false, 0, e.note, 0));
+        }
+        if let Some(m) = metro {
+            let total = events
+                .iter()
+                .map(|e| e.start_ms + e.dur_ms)
+                .max()
+                .unwrap_or(0);
+            for c in metronome::clicks(m.beat_ms, m.beats, total) {
+                acts.push((c.at_ms, true, metronome::CHANNEL, c.note, c.vel));
+                acts.push((
+                    c.at_ms + metronome::CLICK_MS,
+                    false,
+                    metronome::CHANNEL,
+                    c.note,
+                    0,
+                ));
+            }
         }
         acts.sort_by(|a, b| a.0.cmp(&b.0).then(a.1.cmp(&b.1)));
         let out = MidiOutput::new("maestro")?;
@@ -91,16 +127,16 @@ pub fn play_timeline(events: &[NoteEvent], device: Option<usize>, speed: f32) ->
             .connect(port, "maestro-timeline")
             .map_err(|e| anyhow::anyhow!("MIDI connect failed: {e}"))?;
         let mut clock = 0u32;
-        for (time, on, note, vel) in acts {
+        for (time, on, ch, note, vel) in acts {
             if time > clock {
                 let dt = ((time - clock) as f32 / speed).round() as u64;
                 thread::sleep(Duration::from_millis(dt));
                 clock = time;
             }
             if on {
-                let _ = conn.send(&[0x90, note, vel]);
+                let _ = conn.send(&[0x90 | (ch & 0x0F), note, vel]);
             } else {
-                let _ = conn.send(&[0x80, note, 0]);
+                let _ = conn.send(&[0x80 | (ch & 0x0F), note, 0]);
             }
         }
         Ok(())
@@ -113,12 +149,81 @@ pub fn play_timeline(events: &[NoteEvent], device: Option<usize>, speed: f32) ->
             .map(|e| e.start_ms + e.dur_ms)
             .max()
             .unwrap_or(0);
+        let clicks = metro
+            .map(|m| crate::metronome::clicks(m.beat_ms, m.beats, total).len())
+            .unwrap_or(0);
         println!(
-            "(no MIDI feature) {} events, {} ms (speed x{:.2})",
+            "(no MIDI feature) {} events, {} ms (speed x{:.2}, {} clicks)",
             events.len(),
             total,
-            speed
+            speed,
+            clicks
         );
+        Ok(())
+    }
+}
+
+/// Run a standalone metronome at `bpm` in `beats`/4 time, accenting each
+/// downbeat. Plays `bars` bars then stops, or runs until interrupted (Ctrl-C)
+/// when `bars` is `None`.
+pub fn metronome(bpm: u32, beats: u32, device: Option<usize>, bars: Option<u32>) -> Result<()> {
+    use crate::metronome as m;
+    let bpm = bpm.max(1);
+    let beats = beats.max(1);
+    let spacing = m::beat_ms(bpm);
+    #[cfg(feature = "midi")]
+    {
+        use std::{thread, time::Duration};
+        let mut sink = MidiSink::open(device)?;
+        println!(
+            "Metronome ♩ = {bpm}  ({beats}/4){}",
+            if bars.is_some() {
+                String::new()
+            } else {
+                "   (Ctrl-C to stop)".to_string()
+            }
+        );
+        let mut beat = 0u64;
+        loop {
+            if let Some(n) = bars {
+                if beat >= n as u64 * beats as u64 {
+                    break;
+                }
+            }
+            let accent = beat.is_multiple_of(beats as u64);
+            let (note, vel) = if accent {
+                (m::ACCENT_NOTE, m::ACCENT_VEL)
+            } else {
+                (m::BEAT_NOTE, m::BEAT_VEL)
+            };
+            if let Some(s) = sink.as_mut() {
+                s.note_on_ch(m::CHANNEL, note, vel);
+            }
+            thread::sleep(Duration::from_millis(m::CLICK_MS as u64));
+            if let Some(s) = sink.as_mut() {
+                s.note_off_ch(m::CHANNEL, note);
+            }
+            thread::sleep(Duration::from_millis(
+                spacing.saturating_sub(m::CLICK_MS) as u64
+            ));
+            beat += 1;
+        }
+        if let Some(s) = sink.as_mut() {
+            s.all_off();
+        }
+        Ok(())
+    }
+    #[cfg(not(feature = "midi"))]
+    {
+        let _ = device;
+        match bars {
+            Some(n) => println!(
+                "(no MIDI feature) metronome ♩ = {bpm} ({beats}/4), {n} bars, {spacing} ms/beat"
+            ),
+            None => {
+                println!("(no MIDI feature) metronome ♩ = {bpm} ({beats}/4), {spacing} ms/beat")
+            }
+        }
         Ok(())
     }
 }
@@ -303,7 +408,9 @@ pub fn input_devices() -> Result<Vec<String>> {
 #[cfg(feature = "midi")]
 pub struct MidiSink {
     conn: midir::MidiOutputConnection,
-    active: std::collections::BTreeSet<u8>,
+    /// Notes currently sounding, keyed by `(channel, note)` so melody (channel
+    /// 0) and metronome (channel 9) can be silenced independently.
+    active: std::collections::BTreeSet<(u8, u8)>,
 }
 
 #[cfg(feature = "midi")]
@@ -325,20 +432,30 @@ impl MidiSink {
         }
     }
 
+    /// Sound a note on an arbitrary channel (0–15).
+    pub fn note_on_ch(&mut self, channel: u8, note: u8, velocity: u8) {
+        let _ = self.conn.send(&[0x90 | (channel & 0x0F), note, velocity]);
+        self.active.insert((channel, note));
+    }
+
+    /// Release a note on an arbitrary channel.
+    pub fn note_off_ch(&mut self, channel: u8, note: u8) {
+        let _ = self.conn.send(&[0x80 | (channel & 0x0F), note, 0]);
+        self.active.remove(&(channel, note));
+    }
+
     pub fn note_on(&mut self, note: u8, velocity: u8) {
-        let _ = self.conn.send(&[0x90, note, velocity]);
-        self.active.insert(note);
+        self.note_on_ch(0, note, velocity);
     }
 
     pub fn note_off(&mut self, note: u8) {
-        let _ = self.conn.send(&[0x80, note, 0]);
-        self.active.remove(&note);
+        self.note_off_ch(0, note);
     }
 
-    /// Panic button: release every note still held.
+    /// Panic button: release every note still held, on every channel.
     pub fn all_off(&mut self) {
-        for note in std::mem::take(&mut self.active) {
-            let _ = self.conn.send(&[0x80, note, 0]);
+        for (channel, note) in std::mem::take(&mut self.active) {
+            let _ = self.conn.send(&[0x80 | (channel & 0x0F), note, 0]);
         }
     }
 }
@@ -351,6 +468,8 @@ impl MidiSink {
     pub fn open(_device: Option<usize>) -> Result<Option<Self>> {
         Ok(None)
     }
+    pub fn note_on_ch(&mut self, _channel: u8, _note: u8, _velocity: u8) {}
+    pub fn note_off_ch(&mut self, _channel: u8, _note: u8) {}
     pub fn note_on(&mut self, _note: u8, _velocity: u8) {}
     pub fn note_off(&mut self, _note: u8) {}
     pub fn all_off(&mut self) {}
