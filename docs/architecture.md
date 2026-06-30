@@ -46,7 +46,7 @@ flowchart TB
 | Layer | Modules | Responsibility |
 |-------|---------|----------------|
 | Entry | `main`, `cli` | Parse args (clap), dispatch to a command or the TUI |
-| UI | `tui`, `keyboard` | Full-screen crossterm menu; ASCII piano rendering |
+| UI | `tui`, `keyboard`, `staff` | Full-screen crossterm menu; ASCII piano + grand-staff rendering |
 | Domain | `music`, `theory`, `notes`, `songs`, `practice`, `playlist`, `importer`, `metronome`, `user`, `progress`, `config` | The music/learning logic |
 | Data | `model`, `data` | Serde types and the JSON-catalogue loader |
 | I/O | `midi` | Device output/input + the playback scheduler (feature-gated) |
@@ -88,10 +88,12 @@ flowchart LR
     songs --> notes
     practice --> model
     keyboard --> notes
+    staff --> model
     midi --> model
     midi --> practice
     midi --> metronome
     tui --> metronome
+    tui --> staff
     cli --> metronome
     progress --> config
     user --> config
@@ -167,7 +169,13 @@ Every playable thing — a scale, a chord progression, a monophonic or polyphoni
 song — is reduced to a `Vec<NoteEvent>`. The TUI scheduler advances a song-time
 clock, turning notes on/off at their event times, lighting the on-screen
 keyboard with **all** currently-held notes, and honouring live `+`/`-` BPM
-changes, the `m` metronome toggle, and `Esc`.
+changes, the `m` metronome toggle, the `s` view toggle, and `Esc`.
+
+The same `Vec<NoteEvent>` also feeds the `staff` module, which renders a
+scrolling treble+bass grand staff: it maps each note to a diatonic staff row
+(`staff_row = 38 - diatonic_index`) and each event time to a column relative to a
+fixed playhead, drawing noteheads, sustain bars, ledger lines and accidentals.
+The `s` key cycles the now-playing visual between staff, keyboard, and both.
 
 Tempo is expressed in **BPM**: playback speed is `target_bpm / native_bpm` (the
 `metronome` module owns this arithmetic). The metronome click rides the piece's

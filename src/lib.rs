@@ -19,6 +19,7 @@ pub mod playlist;
 pub mod practice;
 pub mod progress;
 pub mod songs;
+pub mod staff;
 pub mod theory;
 pub mod tui;
 pub mod user;

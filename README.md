@@ -36,7 +36,8 @@ cargo run --features midi -- metronome --bpm 100     # standalone click track
 
 In the **interactive menu** (`cargo run`): arrow keys to move, type to search,
 `Enter` to play, `+`/`-` to change the BPM, `m` to toggle the metronome click,
-`Esc` to stop. Pick your output device under **MIDI Devices** (it's remembered).
+`s` to switch the visual (scrolling staff / piano keyboard / both), `Esc` to
+stop. Pick your output device under **MIDI Devices** (it's remembered).
 
 ## Import any song from YouTube
 
@@ -59,6 +60,9 @@ approximate, but it captures the real notes so you can learn the tune. See
 - **Interactive menu** — arrow-key navigation, type-to-search, scrolling lists.
 - **Live ASCII piano** — the played key(s) light up (all of them for both-hands
   arrangements) and the keyboard scrolls to follow the music.
+- **Sight-reading staff** — a scrolling treble+bass grand staff shows the notes
+  as sheet music flowing past a playhead, so you learn to *read* while you play
+  (`s` toggles staff / keyboard / both).
 - **Wait-mode learning** — `learn <song>` advances only when you play the right
   note, with ear feedback and an accuracy score; `--octave-any` to be forgiving.
 - **Import** — from a **YouTube URL**, a `.mid` file, or a typed text tab.

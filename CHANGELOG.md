@@ -2,6 +2,19 @@
 
 All notable changes to Maestro.
 
+## 0.16.0 — Sight-reading staff view
+
+- **Grand-staff notation while you play.** The now-playing screen can show a
+  scrolling treble+bass staff: notes flow right-to-left past a playhead, sounding
+  green, upcoming white, and fading grey once played — so you can practise
+  reading the music, not just watch the keys.
+- Noteheads sit at their true pitch position with sustain bars for duration,
+  ledger lines (middle C and out-of-staff notes), and sharps; G- and F-clef
+  markers anchor each staff.
+- **`s` cycles the view** — staff + keyboard together, staff only, or keyboard
+  only. On short terminals the staff takes priority.
+- New `staff` module owns the notation geometry (pure, unit-tested).
+
 ## 0.15.0 — Metronome & tempo in BPM
 
 - **Set the pace in BPM** instead of an abstract multiplier. `maestro play <id>

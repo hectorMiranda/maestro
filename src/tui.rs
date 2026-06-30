@@ -9,6 +9,7 @@ use crate::{
     config::Config,
     data, keyboard, midi,
     model::{NoteEvent, Song},
+    staff,
 };
 use anyhow::Result;
 use crossterm::{
@@ -42,6 +43,28 @@ enum Tick {
     Faster,
     Slower,
     ToggleMetro,
+    ToggleView,
+}
+
+/// What the now-playing screen shows below the progress line.
+#[derive(Clone, Copy, PartialEq)]
+enum ViewMode {
+    /// The scrolling grand staff and the piano keyboard together.
+    Both,
+    /// The grand staff (sheet music) only.
+    Staff,
+    /// The piano keyboard only.
+    Keyboard,
+}
+
+impl ViewMode {
+    fn next(self) -> Self {
+        match self {
+            ViewMode::Both => ViewMode::Staff,
+            ViewMode::Staff => ViewMode::Keyboard,
+            ViewMode::Keyboard => ViewMode::Both,
+        }
+    }
 }
 
 /// Build a unified, time-stamped event list from any [`Playable`].
@@ -301,6 +324,7 @@ fn play_entry(
 
     let mut bpm: u32 = native;
     let mut metro_on = Config::load().map(|c| c.metronome).unwrap_or(false);
+    let mut view = ViewMode::Both;
     let mut t: u32 = 0;
     let mut idx = 0usize; // next note event to start
     let mut held: Vec<(u32, u8)> = Vec::new(); // (end_ms, note)
@@ -366,6 +390,7 @@ fn play_entry(
         now_playing(
             out,
             &entry.label,
+            &events,
             t,
             total,
             &active,
@@ -373,6 +398,7 @@ fn play_entry(
             hi,
             bpm,
             metro_on,
+            view,
             footer,
         )?;
 
@@ -385,6 +411,7 @@ fn play_entry(
             Tick::Faster => bpm = (bpm + 5).min(300),
             Tick::Slower => bpm = bpm.saturating_sub(5).max(30),
             Tick::ToggleMetro => metro_on = !metro_on,
+            Tick::ToggleView => view = view.next(),
             Tick::Continue => {}
         }
         t += STEP;
@@ -411,6 +438,7 @@ fn poll_step(ms: u32) -> Result<Tick> {
                         KeyCode::Char('+') | KeyCode::Char('=') => return Ok(Tick::Faster),
                         KeyCode::Char('-') | KeyCode::Char('_') => return Ok(Tick::Slower),
                         KeyCode::Char('m') | KeyCode::Char('M') => return Ok(Tick::ToggleMetro),
+                        KeyCode::Char('s') | KeyCode::Char('S') => return Ok(Tick::ToggleView),
                         _ => {}
                     }
                 }
@@ -679,6 +707,7 @@ fn fmt_time(ms: u32) -> String {
 fn now_playing(
     out: &mut Stdout,
     label: &str,
+    events: &[NoteEvent],
     elapsed_ms: u32,
     total_ms: u32,
     active: &BTreeSet<u8>,
@@ -686,6 +715,7 @@ fn now_playing(
     hi: u8,
     bpm: u32,
     metro_on: bool,
+    view: ViewMode,
     footer: &str,
 ) -> Result<()> {
     let (cols, rows) = term_size();
@@ -723,22 +753,65 @@ fn now_playing(
         Print(truncate(&status, cols)),
     )?;
 
-    // Live keyboard, vertically centred-ish in the remaining space.
-    let kb = keyboard::render(lo, hi, active, cols);
+    // Visual area: everything between the status line and the footer.
     let start_y = 5u16;
-    for (r, row) in kb.rows.iter().enumerate() {
-        queue!(out, MoveTo(0, start_y + r as u16))?;
-        draw_cells(out, row)?;
+    let footer_y = rows.saturating_sub(1) as u16;
+    let avail = footer_y.saturating_sub(start_y) as usize;
+
+    // The keyboard has a fixed height (its rows plus a label line).
+    let kb = keyboard::render(lo, hi, active, cols);
+    let kb_total = kb.rows.len() + 1;
+
+    // Decide how the staff and keyboard share the vertical space.
+    let (staff_h, show_keyboard) = match view {
+        ViewMode::Keyboard => (0, true),
+        ViewMode::Staff => (avail, false),
+        ViewMode::Both => {
+            if avail >= kb_total + 9 {
+                (avail - kb_total, true)
+            } else {
+                (avail, false) // too short for both — the staff wins
+            }
+        }
+    };
+
+    let mut y = start_y;
+    if staff_h > 0 {
+        let st = staff::render(events, elapsed_ms, staff_h, cols, staff::LOOKAHEAD_MS);
+        for row in st.rows.iter().take(staff_h) {
+            if y >= footer_y {
+                break;
+            }
+            queue!(out, MoveTo(0, y))?;
+            draw_cells(out, row)?;
+            y += 1;
+        }
     }
+    if show_keyboard {
+        for row in &kb.rows {
+            if y >= footer_y {
+                break;
+            }
+            queue!(out, MoveTo(0, y))?;
+            draw_cells(out, row)?;
+            y += 1;
+        }
+        if y < footer_y {
+            queue!(
+                out,
+                MoveTo(0, y),
+                SetForegroundColor(Color::DarkGrey),
+                Print(truncate(&kb.labels, cols)),
+                ResetColor,
+            )?;
+        }
+    }
+
     queue!(
         out,
-        MoveTo(0, start_y + kb.rows.len() as u16),
+        MoveTo(0, footer_y),
         SetForegroundColor(Color::DarkGrey),
-        Print(truncate(&kb.labels, cols)),
-        ResetColor,
-        MoveTo(0, rows.saturating_sub(1) as u16),
-        SetForegroundColor(Color::DarkGrey),
-        Print(truncate(footer, cols)),
+        Print(truncate(&format!("{footer}   s view"), cols)),
         ResetColor,
     )?;
     out.flush()?;
