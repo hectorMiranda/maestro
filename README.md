@@ -85,7 +85,7 @@ approximate, but it captures the real notes so you can learn the tune. See
 | `chords` / `chord <id>` | List / show a chord progression |
 | `songs` / `play <id> [--device N] [--bpm N] [--metronome] [--beats N]` | List / play a song (in BPM, optional click) |
 | `metronome [--bpm N] [--beats N] [--bars N]` | Standalone metronome click track |
-| `learn <id\|file> [--input N] [--octave-any]` | Interactive wait-mode practice |
+| `learn <id\|file> [--input N] [--output N] [--octave-any]` | Interactive wait-mode practice |
 | `import <url\|file> [--save id] [--play]` | Import from YouTube, `.mid`, or a tab |
 | `setup [--melody\|--full] [--python P]` | Install the YouTube-import toolchain |
 | `playlists` · `playlist create/add/remove/show/play/export/import` | Playlists |
@@ -116,10 +116,11 @@ scripts in [`scripts/windows/`](scripts/windows/).
 
 ## Documentation
 
-- [docs/architecture.md](docs/architecture.md) — design & diagrams
-- [docs/learning.md](docs/learning.md) — wait-mode learning & the text-tab format
+- [docs/cli.md](docs/cli.md) — full CLI & interactive-menu reference
+- [docs/learning.md](docs/learning.md) — sight-reading, tempo/metronome, wait-mode & the text-tab format
 - [docs/playlists.md](docs/playlists.md) — playlists, importing, YouTube setup
-- [docs/cli.md](docs/cli.md) — CLI reference
+- [docs/architecture.md](docs/architecture.md) — design & diagrams
+- [CHANGELOG.md](CHANGELOG.md) — release history · [CONTRIBUTING.md](CONTRIBUTING.md) — dev guide
 - per-scale / per-chord lesson pages under [docs/](docs/)
 
 ## License
