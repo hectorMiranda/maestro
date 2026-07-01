@@ -40,6 +40,9 @@ pub struct Config {
     pub base_octave: u8,
     #[serde(default = "crate::config::default_true")]
     pub color: bool,
+    /// Whether the metronome click is on by default during playback.
+    #[serde(default)]
+    pub metronome: bool,
     /// Python interpreter for the YouTube-import pipeline (set by `maestro setup`).
     #[serde(default)]
     pub python_path: Option<String>,
@@ -57,6 +60,7 @@ impl Default for Config {
             theme: default_theme(),
             base_octave: default_octave(),
             color: true,
+            metronome: false,
             python_path: None,
         }
     }

@@ -29,13 +29,14 @@ cargo run -- chord c_i_iv_v
 
 # with a real keyboard (Windows works out of the box; Linux needs ALSA — see below)
 cargo run --features midi -- devices
-cargo run --features midi -- play amor_cortes --device 3 --speed 0.8
+cargo run --features midi -- play amor_cortes --device 3 --bpm 90 --metronome
 cargo run --features midi -- learn twinkle           # interactive wait-mode
+cargo run --features midi -- metronome --bpm 100     # standalone click track
 ```
 
 In the **interactive menu** (`cargo run`): arrow keys to move, type to search,
-`Enter` to play, `+`/`-` to change speed, `Esc` to stop. Pick your output device
-under **MIDI Devices** (it's remembered).
+`Enter` to play, `+`/`-` to change the BPM, `m` to toggle the metronome click,
+`Esc` to stop. Pick your output device under **MIDI Devices** (it's remembered).
 
 ## Import any song from YouTube
 
@@ -63,7 +64,9 @@ approximate, but it captures the real notes so you can learn the tune. See
 - **Import** — from a **YouTube URL**, a `.mid` file, or a typed text tab.
 - **Playlists** — build ordered sets, play back-to-back, and export a
   self-contained bundle to share.
-- **Speed control** — `+`/`-` live, or `--speed` on the CLI.
+- **Tempo in BPM & metronome** — set the pace by `--bpm` (or `+`/`-` live in the
+  TUI), toggle an accented woodblock click with `--metronome` / `m`, or run a
+  standalone `metronome` click track.
 - **Device picker** — choose and remember your output keyboard.
 - **Catalogue** — 144 scales (12 keys × 12 types), 96 chord progressions, and
   380+ songs/etudes, all JSON under `data/`.
@@ -76,14 +79,15 @@ approximate, but it captures the real notes so you can learn the tune. See
 | `maestro` / `tui` | Interactive full-screen menu (default) |
 | `scales` / `scale <id> [--play]` | List / show a scale |
 | `chords` / `chord <id>` | List / show a chord progression |
-| `songs` / `play <id> [--device N] [--speed S]` | List / play a song |
+| `songs` / `play <id> [--device N] [--bpm N] [--metronome] [--beats N]` | List / play a song (in BPM, optional click) |
+| `metronome [--bpm N] [--beats N] [--bars N]` | Standalone metronome click track |
 | `learn <id\|file> [--input N] [--octave-any]` | Interactive wait-mode practice |
 | `import <url\|file> [--save id] [--play]` | Import from YouTube, `.mid`, or a tab |
 | `setup [--melody\|--full] [--python P]` | Install the YouTube-import toolchain |
 | `playlists` · `playlist create/add/remove/show/play/export/import` | Playlists |
 | `devices` | List MIDI input/output devices |
 | `register/login/logout/whoami/progress` | Local users + practice tracking |
-| `config [show\|set-device\|set-tempo]` | Inspect or edit configuration |
+| `config [show\|set-device\|set-tempo\|set-metronome]` | Inspect or edit configuration |
 
 Run `maestro <command> --help` for details.
 

@@ -10,6 +10,7 @@ pub mod config;
 pub mod data;
 pub mod importer;
 pub mod keyboard;
+pub mod metronome;
 pub mod midi;
 pub mod model;
 pub mod music;

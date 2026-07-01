@@ -35,12 +35,13 @@ enum Playable {
     Timeline(Vec<NoteEvent>),
 }
 
-/// What a polling step returned (Esc / speed keys during playback).
+/// What a polling step returned (Esc / tempo / metronome keys during playback).
 enum Tick {
     Continue,
     Stop,
     Faster,
     Slower,
+    ToggleMetro,
 }
 
 /// Build a unified, time-stamped event list from any [`Playable`].
@@ -91,6 +92,9 @@ struct Entry {
     label: String,
     id: String,
     play: Playable,
+    /// Notated tempo (BPM) — the beat grid for playback speed and metronome.
+    /// Scales and chord drills, which carry no tempo, use a sensible default.
+    tempo: u32,
 }
 
 /// A human label for the currently-selected output device.
@@ -238,7 +242,7 @@ fn browse(out: &mut Stdout, title: &str, entries: &[Entry], device: Option<usize
             KeyCode::End => sel = filtered.len().saturating_sub(1),
             KeyCode::Enter => {
                 if let Some(entry) = filtered.get(sel) {
-                    play_entry(out, entry, device, "Esc stop   +/- speed")?;
+                    play_entry(out, entry, device, "Esc stop   +/- BPM   m metronome")?;
                 }
             }
             KeyCode::Esc => break,
@@ -289,13 +293,25 @@ fn play_entry(
     let mut sink = midi::MidiSink::open(device)?;
 
     const STEP: u32 = 25; // song-time milliseconds per frame
-    let mut speed: f32 = 1.0;
+    const BEATS: u32 = 4; // metronome bar length (4/4)
+    let native = entry.tempo.max(1);
+    // Beat spacing lives in song-time so the clicks ride the same speed scaling
+    // as the notes and end up sounding at the chosen BPM.
+    let beat_ms = crate::metronome::beat_ms(native).max(1);
+
+    let mut bpm: u32 = native;
+    let mut metro_on = Config::load().map(|c| c.metronome).unwrap_or(false);
     let mut t: u32 = 0;
-    let mut idx = 0usize; // next event to start
+    let mut idx = 0usize; // next note event to start
     let mut held: Vec<(u32, u8)> = Vec::new(); // (end_ms, note)
+    let mut clicks_held: Vec<(u32, u8)> = Vec::new(); // (end_ms, note) on ch 9
+    let mut next_click: u32 = 0;
+    let mut beat_index: u32 = 0;
     let mut interrupted = false;
 
     while t <= total {
+        let speed = crate::metronome::speed_for(bpm, native);
+
         // Start newly-due notes.
         while idx < events.len() && events[idx].start_ms <= t {
             let e = &events[idx];
@@ -317,8 +333,48 @@ fn play_entry(
             }
         });
 
+        // Metronome clicks on the beat grid. When off, keep the grid aligned so
+        // re-enabling starts cleanly on the next beat rather than bursting.
+        while next_click <= t {
+            let accent = beat_index.is_multiple_of(BEATS);
+            if metro_on {
+                let (note, vel) = if accent {
+                    (crate::metronome::ACCENT_NOTE, crate::metronome::ACCENT_VEL)
+                } else {
+                    (crate::metronome::BEAT_NOTE, crate::metronome::BEAT_VEL)
+                };
+                if let Some(s) = sink.as_mut() {
+                    s.note_on_ch(crate::metronome::CHANNEL, note, vel);
+                }
+                clicks_held.push((t + crate::metronome::CLICK_MS, note));
+            }
+            beat_index += 1;
+            next_click += beat_ms;
+        }
+        clicks_held.retain(|&(end, note)| {
+            if end <= t {
+                if let Some(s) = sink.as_mut() {
+                    s.note_off_ch(crate::metronome::CHANNEL, note);
+                }
+                false
+            } else {
+                true
+            }
+        });
+
         let active: BTreeSet<u8> = held.iter().map(|&(_, n)| n).collect();
-        now_playing(out, &entry.label, t, total, &active, lo, hi, speed, footer)?;
+        now_playing(
+            out,
+            &entry.label,
+            t,
+            total,
+            &active,
+            lo,
+            hi,
+            bpm,
+            metro_on,
+            footer,
+        )?;
 
         let wall = ((STEP as f32) / speed).round() as u32;
         match poll_step(wall)? {
@@ -326,8 +382,9 @@ fn play_entry(
                 interrupted = true;
                 break;
             }
-            Tick::Faster => speed = (speed * 1.25).min(3.0),
-            Tick::Slower => speed = (speed / 1.25).max(0.25),
+            Tick::Faster => bpm = (bpm + 5).min(300),
+            Tick::Slower => bpm = bpm.saturating_sub(5).max(30),
+            Tick::ToggleMetro => metro_on = !metro_on,
             Tick::Continue => {}
         }
         t += STEP;
@@ -353,6 +410,7 @@ fn poll_step(ms: u32) -> Result<Tick> {
                         }
                         KeyCode::Char('+') | KeyCode::Char('=') => return Ok(Tick::Faster),
                         KeyCode::Char('-') | KeyCode::Char('_') => return Ok(Tick::Slower),
+                        KeyCode::Char('m') | KeyCode::Char('M') => return Ok(Tick::ToggleMetro),
                         _ => {}
                     }
                 }
@@ -454,6 +512,7 @@ fn song_to_entry(s: &Song) -> Entry {
         label: format!("{}   [{}]", crate::songs::summary(s), s.id),
         id: s.id.clone(),
         play: Playable::Timeline(s.timeline()),
+        tempo: s.tempo,
     }
 }
 
@@ -523,7 +582,11 @@ fn play_playlist(
     let total = songs.len();
     for (i, song) in songs.iter().enumerate() {
         let entry = song_to_entry(song);
-        let footer = format!("track {}/{}   Esc stop   +/- speed", i + 1, total);
+        let footer = format!(
+            "track {}/{}   Esc stop   +/- BPM   m metronome",
+            i + 1,
+            total
+        );
         if play_entry(out, &entry, device, &footer)? {
             break; // Esc stops the playlist
         }
@@ -621,7 +684,8 @@ fn now_playing(
     active: &BTreeSet<u8>,
     lo: u8,
     hi: u8,
-    speed: f32,
+    bpm: u32,
+    metro_on: bool,
     footer: &str,
 ) -> Result<()> {
     let (cols, rows) = term_size();
@@ -637,11 +701,12 @@ fn now_playing(
         None => "♪  —".to_string(),
     };
     let status = format!(
-        "{}  {} / {}   speed x{:.2}",
+        "{}  {} / {}   ♩ = {}{}",
         bar,
         fmt_time(elapsed_ms),
         fmt_time(total_ms),
-        speed
+        bpm,
+        if metro_on { "   🔔 metronome" } else { "" }
     );
     queue!(
         out,
@@ -718,6 +783,7 @@ fn scale_entries() -> Result<Vec<Entry>> {
                 label: format!("{}   [{}]", s.name, s.id),
                 id: s.id,
                 play: Playable::Notes(notes),
+                tempo: crate::metronome::DEFAULT_NATIVE_TEMPO,
             }
         })
         .collect())
@@ -730,6 +796,7 @@ fn chord_entries() -> Result<Vec<Entry>> {
             label: format!("{}   [{}]", c.name, c.id),
             id: c.id,
             play: Playable::Chords(c.chords),
+            tempo: crate::metronome::DEFAULT_NATIVE_TEMPO,
         })
         .collect())
 }
@@ -740,6 +807,7 @@ fn song_entries() -> Result<Vec<Entry>> {
         .map(|s: Song| Entry {
             label: format!("{}   [{}]", crate::songs::summary(&s), s.id),
             play: Playable::Timeline(s.timeline()),
+            tempo: s.tempo,
             id: s.id,
         })
         .collect())
