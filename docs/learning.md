@@ -4,6 +4,25 @@ Maestro can teach you a song in **wait mode**: it shows the next note, waits
 until you play it on your MIDI keyboard, echoes it back, and scores your
 accuracy. You can learn anything in the catalogue — or import your own song.
 
+## Read, play, and keep time (the now-playing screen)
+
+When you play a piece from the interactive menu (`maestro` → pick a list →
+`Enter`), the now-playing screen is a practice tool in its own right:
+
+- **Sight-reading staff** — a scrolling treble + bass grand staff shows the
+  music as sheet notation flowing right-to-left past a fixed playhead: notes are
+  green while sounding, white while still ahead, and grey once played. Press `s`
+  to cycle the view between the staff, the light-up piano keyboard, or both.
+- **Tempo in BPM** — press `+` / `-` to raise or lower the tempo live (shown as
+  `♩ = 120`). Slow a hard passage down, then bring it back up.
+- **Metronome** — press `m` to toggle an accented woodblock click that keeps the
+  beat while you play along. `Esc` stops.
+
+The same controls exist on the command line: `maestro play <id> --bpm 90
+--metronome`. Set a default tempo with `maestro config set-tempo 90`, or start
+the click on by default with `maestro config set-metronome true`. For a plain
+click track with no piece, use `maestro metronome --bpm 100`.
+
 ## In the Rust app (cross-platform)
 
 Needs the `midi` feature for live keyboard input:

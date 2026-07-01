@@ -10,7 +10,10 @@ Two JSON shapes (see `src/model.rs`):
 
 - **Song** — `data/songs/<id>.json`: `{ id, name, composer, tempo, notes }`
   where each note is `[midi, velocity, duration_ms]`. A velocity of `0` is a
-  **rest** (a pause). This captures notes, lengths and pauses exactly.
+  **rest** (a pause). This captures notes, lengths and pauses exactly. A song may
+  instead (or also) carry an `events` list of `{ note, start, dur, vel }` for
+  **polyphonic** (both-hands) arrangements where notes overlap; `tempo` is the
+  notated BPM used for tempo/metronome playback.
 - **Playlist** — `data/playlists/<id>.json`: `{ id, name, description, tracks }`
   where `tracks` is an ordered list of song ids (lightweight; references the
   catalogue).
@@ -87,10 +90,16 @@ maestro playlist add my_mix amor_cortes
 maestro playlist add my_mix fur_elise
 maestro playlist show my_mix
 maestro playlist play my_mix               # play them back-to-back
+maestro playlist play my_mix --bpm 90 --metronome   # slower, with a click
 ```
 
+`playlist play` takes the same tempo/metronome flags as `play` (`--bpm`,
+`--speed`, `--metronome`, `--beats`), applied to each track relative to its own
+notated tempo.
+
 Or in the interactive menu: **Playlists → pick one → Enter** plays the whole
-list with the live keyboard; `Esc` stops.
+list with the live keyboard and sight-reading staff; `+`/`-` change the tempo,
+`m` toggles the metronome, `s` switches the visual, and `Esc` stops.
 
 ## Sharing
 
